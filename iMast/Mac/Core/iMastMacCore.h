@@ -29,6 +29,5 @@ FOUNDATION_EXPORT double iMastMacCoreVersionNumber;
 //! Project version string for iMastMacCore.
 FOUNDATION_EXPORT const unsigned char iMastMacCoreVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <iMastMacCore/PublicHeader.h>
-
-
+// In this header, you should import all the public headers of your framework
+// using statements like #import <iMastMacCore/PublicHeader.h>

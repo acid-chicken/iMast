@@ -29,6 +29,5 @@ FOUNDATION_EXPORT double iMastiOSCoreVersionNumber;
 //! Project version string for iMastiOSCore.
 FOUNDATION_EXPORT const unsigned char iMastiOSCoreVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <iMastiOSCore/PublicHeader.h>
-
-
+// In this header, you should import all the public headers of your framework
+// using statements like #import <iMastiOSCore/PublicHeader.h>

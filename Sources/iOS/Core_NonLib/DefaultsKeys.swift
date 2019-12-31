@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,18 +72,18 @@ extension DefaultsKeys {
     static let useCustomizedSharePreview = DefaultsKey<Bool>("use_customized_share_preview", default: true)
 
     static let showPushServiceError = DefaultsKey<Bool>("show_push_service_error", default: false)
-    
+
     static let groupNotifyAccounts = DefaultsKey<Bool>("group_notify_accounts", default: true)
     static let groupNotifyTypeBoost = DefaultsKey<Bool>("group_notify_type_boost", default: false)
     static let groupNotifyTypeFavourite = DefaultsKey<Bool>("group_notify_type_favourite", default: false)
     static let groupNotifyTypeMention = DefaultsKey<Bool>("group_notify_type_mention", default: false)
     static let groupNotifyTypeFollow = DefaultsKey<Bool>("group_notify_type_follow", default: false)
     static let groupNotifyTypeUnknown = DefaultsKey<Bool>("group_notify_type_unknown", default: false)
-    
+
     static let newHtmlParser = DefaultsKey<Bool>("new_html_parser", default: true)
     static let notifyTabInfiniteScroll = DefaultsKey<Bool>("notify_tab_infinite_scroll", default: false)
     static let newFirstScreen = DefaultsKey<Bool>("new_first_screen", default: false)
-    
+
     static let useCustomBoostSound = DefaultsKey<Bool>("use_custom_boost_sound", default: false)
     static let useCustomFavouriteSound = DefaultsKey<Bool>("use_custom_favourite_sound", default: false)
 }

@@ -3,17 +3,17 @@
 //  iMastNotifyService
 //
 //  Created by rinsuki on 2018/07/24.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ enum NotificationServiceError: Error {
 }
 
 class NotificationService: UNNotificationServiceExtension {
-    
+
     var contentHandler: ((UNNotificationContent) -> Void)?
     var bestAttemptContent: UNMutableNotificationContent?
 
@@ -44,7 +44,7 @@ class NotificationService: UNNotificationServiceExtension {
             }
             let copyDest = cacheDirectory.appendingPathComponent(urlHashed + pathExt)
             let tempDest = cacheDirectory.appendingPathComponent(urlHashed + ".temp" + pathExt)
-            
+
             if FileManager.default.fileExists(atPath: copyDest.path) { // もしもうキャッシュがあるんだったら
                 if !FileManager.default.fileExists(atPath: tempDest.path) {
                     try FileManager.default.copyItem(at: copyDest, to: tempDest)
@@ -52,7 +52,7 @@ class NotificationService: UNNotificationServiceExtension {
                 resolve(tempDest) // それを返す
                 return
             }
-            
+
             let sessionConfig = URLSessionConfiguration.default
             sessionConfig.urlCache = URLCache(memoryCapacity: 0, diskCapacity: 0)
             let session = URLSession(configuration: sessionConfig)
@@ -77,14 +77,14 @@ class NotificationService: UNNotificationServiceExtension {
             task.resume()
         }
     }
-    
+
     // swiftlint:disable cyclomatic_complexity
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
         self.contentHandler = contentHandler
         bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
-        
+
         // Modify the notification content here...
-        
+
         self.bestAttemptContent?.threadIdentifier = ""
         if Defaults[.groupNotifyAccounts], let receiveUser = request.content.userInfo["receiveUser"] as? [String] {
             self.bestAttemptContent?.threadIdentifier += "account=\(receiveUser.joined(separator: "@")),"
@@ -124,7 +124,7 @@ class NotificationService: UNNotificationServiceExtension {
             }
         }
         print(self.bestAttemptContent?.threadIdentifier)
-        
+
         var promise: [Promise<Void>] = []
         promise.append(async { _ in // get attachment images
             if let images = request.content.userInfo["images"] as? [String] {
@@ -148,9 +148,9 @@ class NotificationService: UNNotificationServiceExtension {
                 self.bestAttemptContent?.userInfo["upstreamObject"] = str
             }
         })
-        
+
         let promiseAll = all(promise)
-        
+
         promiseAll.catch { error in
             if Defaults[.showPushServiceError] {
                 self.bestAttemptContent?.title = "Notification Service Error"
@@ -165,7 +165,7 @@ class NotificationService: UNNotificationServiceExtension {
             }
         }
     }
-    
+
     override func serviceExtensionTimeWillExpire() {
         // Called just before the extension will be terminated by the system.
         // Use this as an opportunity to deliver your "best attempt" at modified content, otherwise the original push payload will be used.

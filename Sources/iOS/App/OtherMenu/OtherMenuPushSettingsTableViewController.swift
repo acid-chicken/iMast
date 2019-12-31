@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/07/17.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,19 +37,19 @@ import iMastiOSCore
 class OtherMenuPushSettingsTableViewController: FormViewController {
     var loginSafari: LoginSafari!
     let notifwift = Notifwift()
-    
+
     var accounts: [PushServiceToken] = []
-    
+
     let accountsSection = Section("アカウント一覧")
-    
+
     init() {
         super.init(style: .grouped)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -135,7 +135,7 @@ class OtherMenuPushSettingsTableViewController: FormViewController {
         }
         Notifwift.post(.pushSettingsAccountReload)
     }
-    
+
     @objc func reload(_ blocking: Bool = false) {
         let vc = ModalLoadingIndicatorViewController()
         let animatePromise: Promise<Void>
@@ -194,7 +194,7 @@ class OtherMenuPushSettingsTableViewController: FormViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     func addAccountDialog() {
         Promise<String?>(in: .main) { resolve, reject, _ in
             let alert = UIAlertController(title: "アカウント追加", message: "インスタンスのホスト名を入力してください\n(https://などは含めず入力してください)", preferredStyle: .alert)
@@ -225,7 +225,7 @@ class OtherMenuPushSettingsTableViewController: FormViewController {
             }
         }
     }
-    
+
     func deleteAuthInfo() {
         let navigationController = self.navigationController
         confirm(
@@ -243,7 +243,7 @@ class OtherMenuPushSettingsTableViewController: FormViewController {
             }
         }
     }
-    
+
     static func openRequest(vc: UIViewController) {
         if try! PushService.isRegistered() {
             vc.navigationController?.pushViewController(OtherMenuPushSettingsTableViewController(), animated: true)

@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/07/15.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,12 +58,12 @@ class PushServiceToken: Codable {
     var instance: String
     var userName: String
     var _id: String
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
     }
-    
+
     func update() -> Promise<PushServiceToken> {
         return Alamofire.request(
             "https://imast-backend.rinsuki.net/push/api/v1/my-accounts/"+self._id,
@@ -82,7 +82,7 @@ class PushServiceToken: Codable {
                 return Promise(resolved: wrapper.result)
             })
     }
-    
+
     func delete() -> Promise<Void> {
         return Alamofire.request(
             "https://imast-backend.rinsuki.net/push/api/v1/my-accounts/"+self._id,
@@ -109,13 +109,13 @@ class PushService {
         }
         return "CustomV1 \(userId):\((secret + ":" + String(time)).sha256!.lowercased()):\(time)"
     }
-    
+
     static func isRegistered() throws -> Bool {
         if try self.keyChain.getString("userId") == nil { return false }
         if try self.keyChain.getString("secret") == nil { return false }
         return true
     }
-    
+
     static func register() -> Promise<Void> {
         let params = [
             "deviceName": UIDevice.current.platform,
@@ -149,12 +149,12 @@ class PushService {
 //            }
             try! PushService.keyChain.set(res.id, key: "userId")
             try! PushService.keyChain.set(res.secret, key: "secret")
-            
+
 //            resolve(())
             return ()
         }
     }
-    
+
     static func updateDeviceToken(deviceToken: Data) {
         guard let auth = try! self.getAuthorizationHeader() else {
             return
@@ -168,7 +168,7 @@ class PushService {
         }
         Alamofire.request("https://imast-backend.rinsuki.net/push/api/v1/device-token", method: .put, parameters: params, encoding: JSONEncoding.default, headers: ["Authorization": auth])
     }
-    
+
     static func getRegisterAccounts() -> Promise<[PushServiceToken]> {
         typealias TokenList = [PushServiceToken]
         return PromiseWrapper {
@@ -184,7 +184,7 @@ class PushService {
             ).responseDecodable(PushServiceWrapper<TokenList>.self)
         }.then { $0.result }
     }
-    
+
     static func getAuthorizeUrl(host: String) -> Promise<String> {
         class Wrapper: Codable { var url: String }
         return PromiseWrapper { () -> String? in
@@ -204,7 +204,7 @@ class PushService {
             return wrapper.url
         }
     }
-    
+
     static func unRegister() -> Promise<Void> {
         return PromiseWrapper {
             try self.getAuthorizationHeader()
@@ -221,7 +221,7 @@ class PushService {
             return self.deleteAuthInfo()
         }
     }
-    
+
     static func deleteAuthInfo() -> Promise<Void> {
         return PromiseWrapper {
             try self.keyChain.remove("userId")

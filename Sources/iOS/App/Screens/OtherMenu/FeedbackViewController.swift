@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/10/10.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@ import Eureka
 import Alamofire
 
 class FeedbackViewController: FormViewController {
-    
+
     let versionString = (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String)+"(\((Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String)))"
 
     override func viewDidLoad() {
@@ -66,7 +66,7 @@ class FeedbackViewController: FormViewController {
         }
         title = "Feedback"
     }
-    
+
     func sendFeedback() {
         let values = form.values()
         guard let body = values["body"] as? String, body.count > 0 else {

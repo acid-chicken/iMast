@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/04/22.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,9 +27,9 @@ import Hydra
 import iMastiOSCore
 
 class AddAccountIndexViewController: FormViewController {
-    
+
     var latestToken: MastodonUserToken?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -65,16 +65,16 @@ class AddAccountIndexViewController: FormViewController {
             }
         }
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         return true
     }
-    
+
     func onLoginTapped() {
         let values = form.values()
         guard let hostName = values["instance"] as? String else {
@@ -111,7 +111,7 @@ class AddAccountIndexViewController: FormViewController {
             })
         }
     }
-    
+
     @objc func onCancelTapped() {
         guard let latestToken = latestToken else {
             return

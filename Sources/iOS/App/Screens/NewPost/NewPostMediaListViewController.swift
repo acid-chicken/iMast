@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/04/21.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,17 +32,17 @@ class NewPostMediaListViewController: UIViewController {
 
     let newPostVC: NewPostViewController
     var transparentVC: UIViewController = TransparentViewController()
-    
+
     @IBOutlet weak var imagesStackView: UIStackView!
     init(newPostVC: NewPostViewController) {
         self.newPostVC = newPostVC
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -58,7 +58,7 @@ class NewPostMediaListViewController: UIViewController {
     func refresh() {
         // update image select button title
         self.newPostVC.imageSelectButton.setTitle(" "+self.newPostVC.media.count.description, for: .normal)
-        
+
         // update image list view
         for imageView in self.imagesStackView.arrangedSubviews {
             self.imagesStackView.removeArrangedSubview(imageView)
@@ -86,13 +86,13 @@ class NewPostMediaListViewController: UIViewController {
         self.imagesStackView.setNeedsLayout()
         self.imagesStackView.layoutIfNeeded()
     }
-    
+
     func addMedia(media: UploadableMedia) {
         // TODO
         self.newPostVC.media.append(media)
         self.refresh()
     }
-    
+
     @IBAction func tapAddImage(_ sender: UIButton) {
         let pickerSelector = CustomDocumentMenuViewController(
             documentTypes: [
@@ -135,7 +135,7 @@ class NewPostMediaListViewController: UIViewController {
             self.transparentVC.present(pickerSelector, animated: true, completion: nil)
         }
     }
-    
+
     @objc func tapCurrentMedia(sender: UITapGestureRecognizer) {
         guard let index = sender.view?.tag else { return }
         let media = newPostVC.media[index]
@@ -169,7 +169,7 @@ class NewPostMediaListViewController: UIViewController {
             self.refresh()
         }))
         alertVC.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: nil))
-        
+
         self.present(alertVC, animated: true, completion: nil)
     }
 }
@@ -180,7 +180,7 @@ private class TransparentViewController: UIViewController {
         touchGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(touchGesture)
     }
-    
+
     @objc func onTapped() {
         alertWithPromise(title: "内部エラー", message: "このダイアログはでないはずだよ\n(loc: TransparentViewController.viewDidLoad.touchGesture)").then {
             self.dismiss(animated: false, completion: nil)

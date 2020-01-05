@@ -75,7 +75,7 @@ internal enum L10n {
       internal static let title = L10n.tr("Localizable", "error.title")
     }
     internal enum HomeTimeline {
-      /// ホーム
+      /// ホー�
       internal static let short = L10n.tr("Localizable", "homeTimeline.short")
     }
     internal enum LocalTimeline {

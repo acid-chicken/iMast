@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/11/22.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,20 +29,20 @@ import iMastiOSCore
 class ListsTableViewController: UITableViewController, Instantiatable {
     typealias Input = Void
     typealias Environment = MastodonUserToken
-    
+
     internal var environment: Environment
 
     var lists: [MastodonList] = []
-    
+
     required init(with input: Input, environment: Environment) {
         self.environment = environment
         super.init(style: .plain)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = R.string.localizable.lists()
@@ -55,7 +55,7 @@ class ListsTableViewController: UITableViewController, Instantiatable {
         self.navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(self.addList)),
         ]
-        
+
         self.refreshControl = UIRefreshControl()
         self.refreshControl?.addTarget(self, action: #selector(self.refreshList), for: .valueChanged)
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: nil, style: .plain, target: nil, action: nil)
@@ -65,7 +65,7 @@ class ListsTableViewController: UITableViewController, Instantiatable {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     @objc func addList() {
         let alert = UIAlertController(title: "リストの作成", message: "リスト名を決めてください", preferredStyle: .alert)
         alert.addTextField { textField in
@@ -83,7 +83,7 @@ class ListsTableViewController: UITableViewController, Instantiatable {
         alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
     }
-    
+
     @objc func refreshList() {
         self.environment.lists().then { lists in
             self.lists = lists
@@ -114,7 +114,7 @@ class ListsTableViewController: UITableViewController, Instantiatable {
 
         return cell
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let list = self.lists[indexPath.row]
         let vc = ListTimeLineTableViewController(environment: self.environment)
@@ -139,7 +139,7 @@ class ListsTableViewController: UITableViewController, Instantiatable {
             tableView.deleteRows(at: [indexPath], with: .fade)
         } else if editingStyle == .insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+        }
     }
     */
 

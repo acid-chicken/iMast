@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,30 +32,30 @@ class TopMasterViewController: UITableViewController {
         case accounts
         case others
     }
-    
+
     enum Item: Hashable {
         case account(accountId: String)
         case settings
         case helpAndFeedback
     }
-    
+
     lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(tableView: self.tableView, cellProvider: self.cellProvider)
 
     init() {
         super.init(style: .grouped)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
         title = "iMast"
         navigationItem.largeTitleDisplayMode = .always
-        
+
         var snapshot = dataSource.plainSnapshot()
         snapshot.appendSections([.accounts, .others])
         snapshot.appendItems(userTokens.map { .account(accountId: $0.id!) }, toSection: .accounts)
@@ -65,7 +65,7 @@ class TopMasterViewController: UITableViewController {
         ], toSection: .others)
         dataSource.apply(snapshot, animatingDifferences: false)
     }
-    
+
     func cellProvider(_ tableView: UITableView, indexPath: IndexPath, item: Item) -> UITableViewCell? {
         let cell: UITableViewCell
         switch item {
@@ -88,7 +88,7 @@ class TopMasterViewController: UITableViewController {
         }
         return cell
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {

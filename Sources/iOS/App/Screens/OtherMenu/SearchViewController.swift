@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/10/27.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,11 +36,11 @@ class SearchViewController: UITableViewController, UISearchBarDelegate, Instanti
         self.environment = environment
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     var searchBar: UISearchBar!
     var trendTagsSnapshot = NSDiffableDataSourceSnapshot<Section, Body>()
 
@@ -52,16 +52,16 @@ class SearchViewController: UITableViewController, UISearchBarDelegate, Instanti
         case hashtags
         case trendTags
     }
-    
+
     enum Body: Hashable {
         case account(MastodonAccount)
         case toot(MastodonPost)
         case hashtag(MastodonSearchResultHashtag)
         case trendTag(tag: String, score: Float)
     }
-    
+
     var dataSource: TableViewDiffableDataSource<Section, Body>!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -102,7 +102,7 @@ class SearchViewController: UITableViewController, UISearchBarDelegate, Instanti
             .hashtags: R.string.search.sectionsHashtagsTitle(),
         ]
         dataSource.defaultRowAnimation = .top
-        
+
         title = R.string.search.title()
         tableView.delegate = self
         tableView.dataSource = dataSource
@@ -115,7 +115,7 @@ class SearchViewController: UITableViewController, UISearchBarDelegate, Instanti
         self.reloadTrendTags()
         TableViewCell<MastodonPostCellViewController>.register(to: self.tableView)
     }
-    
+
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
         guard let text = searchBar.text else {
             return
@@ -139,7 +139,7 @@ class SearchViewController: UITableViewController, UISearchBarDelegate, Instanti
             self.refreshControl?.endRefreshing()
         }
     }
-    
+
     @objc func reloadTrendTags() {
         // TODO: トレンドタグのwhitelistを外部指定できるようにする
         guard ["imastodon.net", "imastodon.blue"].contains(environment.app.instance.hostName) else {
@@ -162,11 +162,11 @@ class SearchViewController: UITableViewController, UISearchBarDelegate, Instanti
             self.dataSource.apply(self.trendTagsSnapshot)
         }
     }
-    
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.endEditing(false)
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else {
             return

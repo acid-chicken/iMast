@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/07/28.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,11 +39,11 @@ class PushSettingsAccountTableViewController: FormViewController {
         self.navigationItem.leftBarButtonItem = .init(barButtonSystemItem: .cancel, target: self, action: #selector(close))
         self.navigationItem.rightBarButtonItem = .init(title: "保存", style: .done, target: self, action: #selector(onSave))
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = self.account.acct
@@ -97,7 +97,7 @@ class PushSettingsAccountTableViewController: FormViewController {
             }
         }
     }
-    
+
     @objc func onSave() {
         let vc = ModalLoadingIndicatorViewController()
         presentPromise(vc, animated: true).then {
@@ -111,7 +111,7 @@ class PushSettingsAccountTableViewController: FormViewController {
             self.alert(title: "エラー", message: error.localizedDescription)
         }
     }
-    
+
     func deleteConfirm() {
         confirm(
             title: "確認",

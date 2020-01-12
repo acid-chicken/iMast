@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/12/29.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,7 +77,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getComposeSection() -> Section {
         return Section(header: "投稿設定") {
             SwitchRow { row in
@@ -106,7 +106,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getNowPlayingSection() -> Section {
         return Section(header: "NowPlaying設定") {
             LabelRow { row in
@@ -123,7 +123,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getPostInfoSection() -> Section {
         return Section(header: "投稿詳細") {
             SwitchRow { row in
@@ -132,7 +132,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getTimelineAppearanceSection() -> Section {
         return Section(header: "タイムラインの外観") {
             SliderRow { row in
@@ -220,7 +220,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getTimelineSection() -> Section {
         return Section(header: "タイムライン") {
             SwitchRow { row in
@@ -237,7 +237,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getWidgetSection() -> Section {
         return Section(header: "ウィジェット") {
             LabelRow { row in
@@ -255,7 +255,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getShareSection() -> Section {
         return Section(header: "共有") {
             SwitchRow { row in
@@ -283,7 +283,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getImageCacheSection() -> Section {
         return Section(header: "画像キャッシュ") {
             TextRow { row in
@@ -329,7 +329,7 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     func getExperimentalSection() -> Section {
         return Section(header: "実験的な要素") {
             SwitchRow { row in
@@ -346,12 +346,12 @@ class SettingsViewController: FormViewController {
             }
         }
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     @objc func openHelp() {
         let safari = SFSafariViewController(url: URL(string: "https://cinderella-project.github.io/iMast/help/settings.html")!)
         self.present(safari, animated: true, completion: nil)

@@ -477,7 +477,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: ja, en, zh-Hans
       static let helpAndFeedback = Rswift.StringResource(key: "helpAndFeedback", tableName: "Localizable", bundle: R.hostingBundle, locales: ["ja", "en", "zh-Hans"], comment: nil)
-      /// ja translation: ホーム
+      /// ja translation: ホー�
       ///
       /// Locales: ja, en, zh-Hans
       static let homeTimelineShort = Rswift.StringResource(key: "homeTimeline.short", tableName: "Localizable", bundle: R.hostingBundle, locales: ["ja", "en", "zh-Hans"], comment: nil)
@@ -760,7 +760,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("helpAndFeedback", bundle: bundle, comment: "")
       }
 
-      /// ja translation: ホーム
+      /// ja translation: ホー�
       ///
       /// Locales: ja, en, zh-Hans
       static func homeTimelineShort(preferredLanguages: [String]? = nil) -> String {

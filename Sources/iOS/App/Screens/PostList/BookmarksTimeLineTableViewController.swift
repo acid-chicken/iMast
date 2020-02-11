@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,12 +34,12 @@ class BookmarksTimeLineTableViewController: UITableViewController, Instantiatabl
     enum Section {
         case onlyOne
     }
-    
+
     enum Item: Hashable {
         case post(id: MastodonID)
         case readMore
     }
-    
+
     private var paging = MastodonPaging()
     private var postIds = [MastodonID]()
     private lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(tableView: tableView) { tableView, indexPath, item -> UITableViewCell? in
@@ -57,33 +57,33 @@ class BookmarksTimeLineTableViewController: UITableViewController, Instantiatabl
     } ※ { d in
         d.defaultRowAnimation = .top
     }
-    
+
     private var readmoreCell = ReadmoreTableViewCell()
-    
+
     required init(with input: Void, environment: MastodonUserToken) {
         self.environment = environment
         super.init(style: .plain)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = L10n.Localizable.bookmarks
 //        refreshControl = UIRefreshControl() ※ { c in
 //            c.addTarget(self, action: #selector(refresh), for: .valueChanged)
 //        }
-        
+
         TableViewCell<MastodonPostWrapperViewController<MastodonPostCellViewController>>.register(to: tableView)
-        
+
         tableView.dataSource = dataSource
         update()
         readmoreCell.state = .loading
         refresh()
     }
-    
+
     @objc func refresh() {
         refreshControl?.beginRefreshing()
         environment.requestWithPagingInfo(ep: MastodonEndpoint.GetBookmarks(paging: paging.prev)).then { (res, paging) in
@@ -100,7 +100,7 @@ class BookmarksTimeLineTableViewController: UITableViewController, Instantiatabl
             self.readmoreCell.state = .withError
         }
     }
-    
+
     func readmore() {
         guard let next = paging.next else { return }
         readmoreCell.state = .loading
@@ -114,7 +114,7 @@ class BookmarksTimeLineTableViewController: UITableViewController, Instantiatabl
             self.readmoreCell.state = .withError
         }
     }
-    
+
     func update() {
         var snapshot = dataSource.plainSnapshot()
         snapshot.appendSections([.onlyOne])
@@ -123,7 +123,7 @@ class BookmarksTimeLineTableViewController: UITableViewController, Instantiatabl
         self.readmoreCell.state = self.paging.next == nil ? .allLoaded : .moreLoadable
         dataSource.apply(snapshot)
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {

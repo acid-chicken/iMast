@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/01/09.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ public struct MastodonNotification: Codable {
     public let type: String
     public let status: MastodonPost?
     public let account: MastodonAccount?
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
@@ -47,7 +47,7 @@ extension MastodonUserToken {
 extension MastodonEndpoint {
     public struct GetNotifications: MastodonEndpointProtocol {
         public typealias Response = [MastodonNotification]
-        
+
         public let endpoint = "/api/v1/notifications"
         public let method = "GET"
         public var query: [URLQueryItem] {
@@ -60,11 +60,11 @@ extension MastodonEndpoint {
             return q
         }
         public let body: Data? = nil
-        
+
         public var excludedTypes: [String]
         public var limit: Int?
         public var paging: MastodonPagingOption?
-        
+
         public init(limit: Int? = nil, paging: MastodonPagingOption? = nil, excludedTypes: [String] = []) {
             self.limit = limit
             self.paging = paging

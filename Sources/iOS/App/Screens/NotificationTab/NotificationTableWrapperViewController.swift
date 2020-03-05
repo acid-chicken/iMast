@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,23 +31,23 @@ class NotificationTableWrapperViewController: UIViewController, Instantiatable {
     typealias Environment = MastodonUserToken
     let environment: Environment
     var input: Input
-    
+
     required init(with input: Input, environment: Environment) {
         self.input = input
         self.environment = environment
         super.init(nibName: nil, bundle: Bundle(for: type(of: self)))
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     enum FilterType: CaseIterable {
         case all
         case mention
         case reaction
         case follow
-        
+
         var name: String {
             switch self {
             case .all:
@@ -61,7 +61,7 @@ class NotificationTableWrapperViewController: UIViewController, Instantiatable {
             }
         }
     }
-    
+
     let segmentedControl = UISegmentedControl(items: FilterType.allCases.map { $0.name }) ※ { v in
         v.selectedSegmentIndex = 0
         v.addTarget(self, action: #selector(changeFilter), for: .valueChanged)
@@ -75,10 +75,10 @@ class NotificationTableWrapperViewController: UIViewController, Instantiatable {
         b.frame.size.height = 44
         b.delegate = self
     }
-    
+
     let containerView = ContainerView()
     lazy var notificationVC: NotificationTableViewController = .instantiate([], environment: environment)
-    
+
     override func loadView() {
         view = UIView()
         view.addSubview(containerView)
@@ -91,7 +91,7 @@ class NotificationTableWrapperViewController: UIViewController, Instantiatable {
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.top)
         }
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -99,7 +99,7 @@ class NotificationTableWrapperViewController: UIViewController, Instantiatable {
         additionalSafeAreaInsets.top = toolBar.frame.height
         changeContainer()
     }
-    
+
     func changeContainer() {
         if containerView.arrangedSubviews.count > 0 {
             containerView.removeArrangedViewController(notificationVC)
@@ -118,7 +118,7 @@ class NotificationTableWrapperViewController: UIViewController, Instantiatable {
         }
         containerView.addArrangedViewController(notificationVC, parentViewController: self)
     }
-    
+
     @objc func changeFilter() {
         print(segmentedControl.selectedSegmentIndex)
         changeContainer()

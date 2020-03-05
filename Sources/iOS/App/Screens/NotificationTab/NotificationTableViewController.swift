@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/07/30.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,30 +35,30 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
         case reblog
         case mention
         case poll
-        
+
         static func reverse(types: [Self]) -> [Self] {
             return Self.allCases.filter { !types.contains($0) }
         }
     }
     typealias Environment = MastodonUserToken
-    
+
     internal let environment: Environment
-    
+
     var notifications: [MastodonNotification] = []
     let readmoreCell = ReadmoreTableViewCell()
-    
+
     required init(with input: Input, environment: Environment) {
         self.environment = environment
         request = .init(excludedTypes: input.map { $0.rawValue })
         super.init(style: .plain)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     let request: MastodonEndpoint.GetNotifications
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -68,11 +68,11 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
+
         // init refreshControl
         self.refreshControl = UIRefreshControl()
         self.refreshControl?.addTarget(self, action: #selector(self.refreshNotification), for: UIControl.Event.valueChanged)
-        
+
         self.readmoreCell.state = .loading
         environment.request(ep: request).then { notifications in
             self.readmoreCell.state = notifications.count > 0 ? .moreLoadable : .allLoaded
@@ -82,7 +82,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             self.readmoreCell.lastError = error
             self.readmoreCell.state = .withError
         }
-        
+
         self.tableView.register(R.nib.notificationTableViewCell)
     }
 
@@ -104,7 +104,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             return 1
         }
     }
-    
+
     @objc func refreshNotification() {
         var req = request
         if let prevId = notifications.first?.id {
@@ -121,7 +121,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             self.refreshControl?.endRefreshing()
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: R.nib.notificationTableViewCell, for: indexPath)!
@@ -131,7 +131,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             return self.readmoreCell
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.section == 0 {
             let notification = self.notifications[indexPath.row]
@@ -143,10 +143,10 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             }
         }
     }
-    
+
     var oldFetchedTime = Date.timeIntervalSinceReferenceDate
     var oldOffset: CGFloat = 0
-    
+
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard Defaults[.notifyTabInfiniteScroll] else {
             return
@@ -163,7 +163,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             let diffTrue = Int(diff + bottomHeight)
             print(diff, diffTrue, bottomHeight)
             let nowTime = Date.timeIntervalSinceReferenceDate
-            
+
             let diffTime = nowTime - self.oldFetchedTime
             if diffTime > 0.1 {
                 self.oldFetchedTime = nowTime
@@ -180,7 +180,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
                 self.oldFetchedTime = nowTime
                 self.oldOffset = currentOffset
             }
-            
+
             if diffTrue < 200 {
                 DispatchQueue.main.async {
                     self.readMore()
@@ -188,12 +188,12 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             }
         }
     }
-    
+
     func readMore() {
         guard self.readmoreCell.state == .moreLoadable else {
             return
         }
-        
+
         self.readmoreCell.state = .loading
         var req = request
         req.limit = 40
@@ -212,13 +212,13 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             self.readmoreCell.state = .withError
         }
     }
-    
+
     func openNotify(_ notification: MastodonNotification, animated: Bool = true) {
         if let vc = NotificationTableViewController.getNotifyVC(notification, environment: environment) {
             navigationController?.pushViewController(vc, animated: animated)
         }
     }
-    
+
     static func getNotifyVC(_ notification: MastodonNotification, environment: MastodonUserToken) -> UIViewController? {
         guard let account = notification.account else {
             return nil
@@ -239,11 +239,11 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             return UserProfileTopViewController.instantiate(account, environment: environment)
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
-    
+
     override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }

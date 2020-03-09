@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/07/28.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,29 +28,29 @@ import iMastiOSCore
 class FollowTableViewController: UITableViewController, Instantiatable {
     typealias Input = (type: MastodonFollowFetchType, userId: MastodonID)
     typealias Environment = MastodonUserToken
-    
+
     private var input: Input
     internal let environment: Environment
 
     let readmoreCell = ReadmoreTableViewCell()
-    
+
     var users: [MastodonAccount] = []
     var paging: MastodonPagingOption? {
         didSet {
             readmoreCell.state = paging == nil ? .allLoaded : .moreLoadable
         }
     }
-    
+
     required init(with input: Input, environment: Environment) {
         self.input = input
         self.environment = environment
         super.init(style: .plain)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -62,7 +62,7 @@ class FollowTableViewController: UITableViewController, Instantiatable {
         self.title = input.type == .following ? "フォロー一覧" : "フォロワー一覧"
         self.load()
     }
-    
+
     func load() {
         self.readmoreCell.state = .loading
         environment.request(ep: MastodonEndpoint.GetFollows(
@@ -104,7 +104,7 @@ class FollowTableViewController: UITableViewController, Instantiatable {
         } else {
             return self.readmoreCell
         }
-        
+
         // Configure the cell...
 
     }

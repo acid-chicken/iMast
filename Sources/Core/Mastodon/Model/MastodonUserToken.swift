@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,17 +34,17 @@ public class MastodonUserToken: Equatable {
     public var name: String?
     public var screenName: String?
     public var avatarUrl: String?
-    
+
     public var acct: String {
         return "\(self.screenName ?? "")@\(self.app.instance.hostName)"
     }
-    
+
     init(app: MastodonApp, token: String) {
         self.app = app
         self.token = token
         self.id = genRandomString()
     }
-    
+
     func getHeader() -> [String: String] {
         print(UserAgentString)
         return [
@@ -53,13 +53,13 @@ public class MastodonUserToken: Equatable {
             "User-Agent": UserAgentString,
         ]
     }
-    
+
     public func getIntVersion() -> Promise<Int> {
         return self.app.instance.getInfo().then { (res) -> Int in
             return MastodonVersionStringToInt(res["version"].stringValue)
         }
     }
-    
+
     static public func initFromId(id: String) -> MastodonUserToken? {
         return try! dbQueue.inDatabase { db in
             guard let row = try Row.fetchOne(db, sql: "SELECT * from user where id=? LIMIT 1", arguments: [id]) else {
@@ -70,7 +70,7 @@ public class MastodonUserToken: Equatable {
             return initFromRow(row: row, app: app)
         }
     }
-    
+
     static func initFromRow(row: Row, app: MastodonApp) -> MastodonUserToken {
         let usertoken = MastodonUserToken(
             app: app,
@@ -98,7 +98,7 @@ public class MastodonUserToken: Equatable {
             return nil
         }
     }
-    
+
     static public func findUserToken(userName: String, instance: String) throws -> MastodonUserToken? {
         return try dbQueue.inDatabase { db -> MastodonUserToken? in
             guard let row = try Row.fetchOne(db, sql: "SELECT * FROM user WHERE screen_name=? AND app_id IN (SELECT id FROM app WHERE instance_hostname = ?) ORDER BY last_used DESC LIMIT 1", arguments: [userName, instance]) else {
@@ -111,7 +111,7 @@ public class MastodonUserToken: Equatable {
             return initFromRow(row: row, app: app)
         }
     }
-    
+
     static public func getAllUserTokens() -> [MastodonUserToken] {
         var usertokens: [MastodonUserToken] = []
         do {
@@ -129,7 +129,7 @@ public class MastodonUserToken: Equatable {
         }
         return usertokens
     }
-    
+
     @discardableResult
     public func save() -> Bool {
         print("save", self.screenName ?? "undefined screenName")
@@ -156,7 +156,7 @@ public class MastodonUserToken: Equatable {
             return false
         }
     }
-    
+
     @discardableResult
     public func use() -> Bool {
         do {
@@ -171,9 +171,9 @@ public class MastodonUserToken: Equatable {
             print(error)
             return false
         }
-        
+
     }
-    
+
     @discardableResult
     public func delete() -> Bool {
         do {
@@ -188,9 +188,9 @@ public class MastodonUserToken: Equatable {
             return false
         }
     }
-    
+
     static var verifyCredentialsCache: [String: JSON] = [:]
-    
+
     public func getUserInfo(cache: Bool = false) -> Promise<JSON> {
         if cache, let cacheObj = MastodonUserToken.verifyCredentialsCache[self.acct] {
             return Promise.init(resolved: cacheObj)
@@ -211,7 +211,7 @@ public class MastodonUserToken: Equatable {
             return Promise.init(resolved: response)
         }
     }
-    
+
     public func request<E: MastodonEndpointProtocol>(ep: E) -> Promise<E.Response> {
         var urlBuilder = URLComponents()
         urlBuilder.scheme = "https"
@@ -247,11 +247,11 @@ public class MastodonUserToken: Equatable {
             }
         }
     }
-    
+
     func get(_ endpoint: String, params: [String: Any]? = nil) -> Promise<JSON> {
         return Promise<JSON> { resolve, reject, _ in
             print("GET", endpoint)
-            
+
             Alamofire.request(URL(string: endpoint, relativeTo: URL(string: "https://\(self.app.instance.hostName)/api/v1/")!)!, parameters: params, headers: self.getHeader()).responseJSON { response in
                 switch response.result {
                 case .success(let value):
@@ -280,7 +280,7 @@ public class MastodonUserToken: Equatable {
             }
         }
     }
-    
+
     func put(_ endpoint: String, params: [String: Any]? = nil) -> Promise<JSON> {
         return Promise<JSON> { resolve, reject, _ in
             Alamofire.request("https://\(self.app.instance.hostName)/api/v1/"+endpoint, method: .put, parameters: params, headers: self.getHeader()).responseJSON { response in
@@ -294,7 +294,7 @@ public class MastodonUserToken: Equatable {
             }
         }
     }
-    
+
     func delete(_ endpoint: String, params: [String: Any]? = nil) -> Promise<JSON> {
         return Promise<JSON> { resolve, reject, _ in
             Alamofire.request("https://\(self.app.instance.hostName)/api/v1/"+endpoint, method: .delete, parameters: params, headers: self.getHeader()).responseJSON { response in
@@ -308,7 +308,7 @@ public class MastodonUserToken: Equatable {
             }
         }
     }
-    
+
     public func upload(file: Data, mimetype: String, filename: String = "imast_upload_file") -> Promise<JSON> {
         return Promise<JSON> { resolve, reject, _ in
             Alamofire.upload(
@@ -347,7 +347,7 @@ public class MastodonUserToken: Equatable {
             )
         }
     }
-    
+
     public static func == (lhs: MastodonUserToken, rhs: MastodonUserToken) -> Bool {
         return lhs.id == rhs.id
     }

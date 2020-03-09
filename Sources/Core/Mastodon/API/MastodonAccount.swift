@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/01/09.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,12 +40,12 @@ public struct MastodonAccount: Codable, EmojifyProtocol {
 
     public let acct: String
     let moved: IndirectBox<MastodonAccount>?
-    
+
     public let niconicoUrl: URL?
-    
+
     // for pawoo
     public let oauthAuthentications: [MastodonAccountOAuthAuthenticate]?
-    
+
     public let emojis: [MastodonCustomEmoji]?
     public let profileEmojis: [MastodonCustomEmoji]?
     enum CodingKeys: String, CodingKey {
@@ -64,14 +64,14 @@ public struct MastodonAccount: Codable, EmojifyProtocol {
 
         case acct
         case moved
-        
+
         case niconicoUrl = "nico_url"
         case oauthAuthentications = "oauth_authentications"
-        
+
         case emojis
         case profileEmojis = "profile_emojis"
     }
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
@@ -82,7 +82,7 @@ extension MastodonAccount: Hashable {
     public static func == (lhs: MastodonAccount, rhs: MastodonAccount) -> Bool {
         return lhs.id == rhs.id
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -91,7 +91,7 @@ extension MastodonAccount: Hashable {
 public struct MastodonAccountOAuthAuthenticate: Codable {
     public let provider: String
     public let uid: String
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
@@ -107,7 +107,7 @@ struct MastodonFollowList {
     var accounts: [MastodonAccount]
     var prev: MastodonID?
     var next: MastodonID?
-    
+
 }
 
 extension MastodonUserToken {
@@ -126,7 +126,7 @@ extension MastodonUserToken {
             return try res.arrayValue.map({try MastodonAccount.decode(json: $0)})
         }
     }
-    
+
     public func followRequestAuthorize(target: MastodonAccount) -> Promise<Void> {
         return self.post("follow_requests/\(target.id.string)/authorize").then { res -> Void in
             return Void()
@@ -142,7 +142,7 @@ extension MastodonUserToken {
 extension MastodonEndpoint {
     public struct GetFollows: MastodonEndpointProtocol {
         public typealias Response = MastodonEndpointResponseWithPaging<[MastodonAccount]>
-        
+
         public var endpoint: String {
             return "/api/v1/accounts/\(target.string)/\(type.rawValue)"
         }
@@ -153,11 +153,11 @@ extension MastodonEndpoint {
             return q
         }
         public let body: Data? = nil
-        
+
         public var target: MastodonID
         public var type: MastodonFollowFetchType
         public var paging: MastodonPagingOption?
-        
+
         public init(target: MastodonID, type: MastodonFollowFetchType, paging: MastodonPagingOption? = nil) {
             self.target = target
             self.type = type

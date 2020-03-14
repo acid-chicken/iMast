@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/05/24.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,21 +37,21 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
         case posts
         case readMore
     }
-    
+
     enum TableBody: Hashable {
         case post(id: MastodonID, pinned: Bool)
         case readMore
     }
-    
+
     let environment: Environment
-    
+
     typealias Input = UITableView.Style
-    
+
     typealias Environment = MastodonUserToken
-    
+
     let tableView: UITableView
     let refreshControl = UIRefreshControl()
-    
+
     var diffableDataSource: TableViewDiffableDataSource<TableSection, TableBody>!
     var streamingNavigationItem: UIBarButtonItem?
     var postsQueue: [MastodonPost] = []
@@ -62,31 +62,31 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
     let isNurunuru = Defaults[.timelineNurunuruMode]
     var timelineType: MastodonTimelineType?
     var postFabButton = UIButton()
-    
+
     var isRefreshEnabled = true
     var isReadmoreEnabled = true
     var isNewPostAvailable = false
-    
+
     required init(with input: Input = .plain, environment: Environment) {
         tableView = UITableView(frame: .zero, style: input)
         self.environment = environment
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         _ = tableView ※ {
             $0.translatesAutoresizingMaskIntoConstraints = false
             self.view.addSubview($0)
             $0.snp.makeConstraints { make in
                 make.center.width.height.equalTo(self.view)
             }
-            
+
             $0.estimatedRowHeight = 100
             $0.rowHeight = UITableView.automaticDimension
 
@@ -96,12 +96,12 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
                     $0.addTarget(self, action: #selector(self.refreshTimeline), for: .valueChanged)
                 }
             }
-            
+
             $0.delegate = self
         }
 
         TableViewCell<MastodonPostWrapperViewController<MastodonPostCellViewController>>.register(to: tableView)
-        
+
         self.diffableDataSource = .init(tableView: tableView) { (tableView, indexPath, target) -> UITableViewCell? in
             switch target {
             case .post(let id, let pinned):
@@ -117,7 +117,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
         }
         self.diffableDataSource.canEditRowAt = true
         self.tableView.dataSource = self.diffableDataSource
-        
+
         _ = self.diffableDataSource.snapshot() ※ {
             $0.appendSections([.pinned, .posts, .readMore])
             if self.isReadmoreEnabled {
@@ -125,14 +125,14 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             }
             self.diffableDataSource.apply($0, animatingDifferences: false)
         }
-        
+
         loadTimeline().then {
             self.tableView.reloadData()
             self.websocketConnect(auto: true)
         }
-        
+
         self.navigationItem.largeTitleDisplayMode = .never
-        
+
         self.navigationItem.leftItemsSupplementBackButton = true
         if self.websocketEndpoint() != nil {
             self.streamingNavigationItem = UIBarButtonItem(image: UIImage(named: "StreamingStatus")!, style: .plain, target: self, action: #selector(self.streamingStatusTapped))
@@ -159,21 +159,21 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
                 }
             }
         }
-        
+
         if isNewPostAvailable {
             self.navigationItem.rightBarButtonItem = .init(
                 title: R.string.localizable.post(), style: .plain,
                 target: self, action: #selector(openNewPostVC)
             )
-            
+
             addKeyCommand(.init(title: "新規投稿", action: #selector(openNewPostVC), input: "n", modifierFlags: .command, discoverabilityTitle: "新規投稿画面を開く"))
-            
+
             if Defaults[.postFabEnabled] {
                 _ = self.postFabButton ※ {
                     $0.setTitle("投稿", for: .normal)
                     $0.titleLabel?.font = UIFont.systemFont(ofSize: 18)
                     $0.backgroundColor = self.view.tintColor
-                    
+
                     self.view.addSubview(self.postFabButton)
                     let size = 56
                     $0.snp.makeConstraints { make in
@@ -187,7 +187,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
                         case .centerBottom:
                             make.centerX.equalTo(view.safeAreaLayoutGuide)
                         }
-                        
+
                         // Y
                         switch Defaults[.postFabLocation] {
                         case .leftCenter, .rightCenter:
@@ -198,30 +198,30 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
                         make.width.height.equalTo(size)
                     }
                     $0.layer.cornerRadius = CGFloat(size / 2)
-                    
+
                     $0.layer.shadowOpacity = 0.25
                     $0.layer.shadowRadius = 2
                     $0.layer.shadowColor = UIColor.black.cgColor
                     $0.layer.shadowOffset = CGSize(width: 0, height: 2)
-                    
+
                     $0.addTarget(self, action: #selector(self.postFabTapped(sender:)), for: .touchUpInside)
                 }
             }
         }
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         if self.isMovingFromParent {
             self.socket?.disconnect()
         }
     }
-    
+
     func loadTimeline() -> Promise<()> {
         guard let timelineType = self.timelineType else {
             print("loadTimelineを実装するか、self.timelineTypeを定義してください。")
             return Promise.init(resolved: Void())
         }
-        
+
         self.readmoreCell.state = .loading
         return self.environment.timeline(timelineType).then { (posts) -> Void in
             self.readmoreCell.state = .moreLoadable
@@ -232,7 +232,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             self.readmoreCell.lastError = e
         }
     }
-    
+
     @objc func refreshTimeline() {
         guard let timelineType = self.timelineType else {
             print("refreshTimelineを実装するか、self.timelineTypeを定義してください。")
@@ -256,7 +256,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             self.refreshControl.endRefreshing()
         }
     }
-    
+
     func readMoreTimeline() {
         guard let timelineType = self.timelineType else {
             print("readMoreTimelineを実装してください!!!!!!")
@@ -271,7 +271,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
         } else {
             pointer = nil
         }
-        
+
         environment.timeline(
             timelineType,
             limit: 40,
@@ -284,22 +284,22 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             self.readmoreCell.lastError = e
         }
     }
-    
+
     func processNewPostVC(newPostVC: NewPostViewController) {
         // オーバーライド用
     }
-    
+
     @objc func openNewPostVC() {
         let vc = R.storyboard.newPost.instantiateInitialViewController()!
         vc.userToken = self.environment
         self.processNewPostVC(newPostVC: vc)
         self.navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     @objc func postFabTapped(sender: UITapGestureRecognizer) {
         self.openNewPostVC()
     }
-    
+
     func addNewPosts(posts: [MastodonPost]) {
         if isNurunuru {
             self._addNewPosts(posts: posts)
@@ -309,7 +309,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             }
         }
     }
-    
+
     func _addNewPosts(posts posts_: [MastodonPost]) {
         if posts_.count == 0 {
             return
@@ -324,7 +324,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             }
             return false
         })
-        
+
         var snapshot = self.diffableDataSource.snapshot()
         snapshot.prependItems(
             posts.map { .post(id: $0.id, pinned: false) },
@@ -336,11 +336,11 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
         }
         self.diffableDataSource.apply(snapshot, animatingDifferences: true)
     }
-    
+
     func websocketEndpoint() -> String? {
         return nil
     }
-    
+
     func websocketConnect(auto: Bool) {
         if auto {
             let conditions = Defaults[.streamingAutoConnect]
@@ -361,7 +361,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
             self.socket = socket
         }
     }
-    
+
     @objc func streamingStatusTapped() {
         print("called")
         let nowStreamConnected = (socket?.webSocket.isConnected ?? false)
@@ -402,12 +402,12 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
         alertVC.addAction(UIAlertAction(title: R.string.localizable.cancel(), style: .cancel, handler: nil))
         present(alertVC, animated: true, completion: nil)
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     func appendNewPosts(posts: [MastodonPost]) {
         var snapshot = self.diffableDataSource.snapshot()
         for post in posts {
@@ -420,7 +420,7 @@ class TimeLineTableViewController: UIViewController, Instantiatable {
 }
 
 extension TimeLineTableViewController: UITableViewDelegate {
-    
+
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard case .post(let id, _) = self.diffableDataSource.itemIdentifier(for: indexPath) else {
             return nil
@@ -428,9 +428,9 @@ extension TimeLineTableViewController: UITableViewDelegate {
         guard let post = environment.memoryStore.post.container[id]?.originalPost else {
             return nil
         }
-        
+
         var actions = [UIContextualAction]()
-        
+
         if environment.canBoost(post: post) {
             actions.append(.init(style: .normal, title: "ブースト") { (action, view, callback) in
                 self.environment.repost(post: post).then { result in
@@ -478,7 +478,7 @@ extension TimeLineTableViewController: UITableViewDelegate {
             }
         }
     }
-    
+
     func updatePost(from: MastodonPost, includeRepost: Bool) {
         MastodonMemoryStoreContainer[self.environment].post.change(obj: from)
     }
@@ -490,13 +490,13 @@ extension TimeLineTableViewController: WebSocketWrapperDelegate {
             streamingNavigationItem?.tintColor = nil
         }
     }
-    
+
     func webSocketDidDisconnect(_ wrapper: WebSocketWrapper, error: Error?) {
         DispatchQueue.mainSafeSync {
             streamingNavigationItem?.tintColor = .systemRed
         }
     }
-    
+
     func webSocketDidReceiveMessage(_ wrapper: WebSocketWrapper, text: String) {
         var object = JSON(parseJSON: text)
         switch object["event"].stringValue {
@@ -517,7 +517,7 @@ extension TimeLineTableViewController: WebSocketWrapperDelegate {
                     }
                 }
             }
-            
+
             snapshot.deleteItems(deletePosts)
 
             if deletePosts.count > 0 {

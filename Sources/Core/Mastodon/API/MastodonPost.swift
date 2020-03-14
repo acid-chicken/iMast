@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2018/01/09.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,11 +35,11 @@ public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvaila
         hasher.combine(self.id.string)
         hasher.combine(self.url)
     }
-    
+
     public static func == (lhs: MastodonPost, rhs: MastodonPost) -> Bool {
         return lhs.id == rhs.id && lhs.url == rhs.url
     }
-    
+
     public let id: MastodonID
     let url: String?
     public var parsedUrl: URL? {
@@ -120,7 +120,7 @@ public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvaila
         case poll
         case language
     }
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
@@ -134,7 +134,7 @@ public struct MastodonCustomEmoji: Codable {
         case shortcode
         case url
     }
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
@@ -151,7 +151,7 @@ public struct MastodonPostMention: Codable {
     let username: String
     public let acct: String
     public let id: MastodonID
-    
+
     @available(*, deprecated, message: "Do not use.")
     init() {
         fatalError("Swift 4.1 work around")
@@ -184,7 +184,7 @@ extension MastodonUserToken {
             return true
         }
     }
-    
+
     public func newPost(status: String) -> Promise<MastodonPost> {
         return self.post("statuses", params: ["status": status]).then { res -> MastodonPost in
             return try MastodonPost.decode(json: res)
@@ -201,7 +201,7 @@ extension MastodonUserToken {
             return try MastodonPost.decode(json: res)
         }
     }
-    
+
     public func favourite(post: MastodonPost) -> Promise<MastodonPost> {
         return self.post("statuses/\(post.id.string)/favourite", params: [:]).then { res -> MastodonPost in
             return try MastodonPost.decode(json: res)
@@ -212,19 +212,19 @@ extension MastodonUserToken {
             return try MastodonPost.decode(json: res)
         }
     }
-    
+
     public func delete(post: MastodonPost) -> Promise<Void> {
         return self.delete("statuses/\(post.id.string)").then { res in
             return Void()
         }
     }
-    
+
     public func context(post: MastodonPost) -> Promise<MastodonPostContext> {
         return self.get("statuses/\(post.id.string)/context").then { res -> MastodonPostContext in
             return try MastodonPostContext.decode(json: res)
         }
     }
-    
+
     public func reports(
         account: MastodonAccount,
         comment: String = "",
@@ -240,7 +240,7 @@ extension MastodonUserToken {
                 return Void()
         }
     }
-    
+
     public func timeline(_ type: MastodonTimelineType, limit: Int? = nil, sinceId: MastodonID? = nil, maxId: MastodonID? = nil) -> Promise<[MastodonPost]> {
         var params = type.params
         if let limit = limit {
@@ -256,7 +256,7 @@ extension MastodonUserToken {
             return try res.arrayValue.map({try MastodonPost.decode(json: $0)})
         }
     }
-    
+
     public func vote(poll: MastodonPoll, choices: [Int]) -> Promise<MastodonPoll> {
         return self.post("polls/\(poll.id.string)/votes", params: [
             "choices": choices,
@@ -264,7 +264,7 @@ extension MastodonUserToken {
             return try MastodonPoll.decode(json: res)
         }
     }
-    
+
     public func refresh(post: MastodonPost) -> Promise<MastodonPost> {
         return self.get("statuses/\(post.id.string)").then { try MastodonPost.decode(json: $0) }
     }
@@ -273,7 +273,7 @@ extension MastodonUserToken {
 public class MastodonTimelineType {
     let endpoint: String
     let params: [String: Any]
-    
+
     static public let home = MastodonTimelineType(endpoint: "timelines/home")
     static public let local = MastodonTimelineType(endpoint: "timelines/public", params: ["local": "true"])
     static public func user(_ account: MastodonAccount, pinned: Bool = false) -> MastodonTimelineType {
@@ -286,13 +286,13 @@ public class MastodonTimelineType {
     static public func list(_ list: MastodonList) -> MastodonTimelineType {
         return MastodonTimelineType(endpoint: "timelines/list/\(list.id.string)")
     }
-    
+
     static public func hashtag(_ tag: String) -> MastodonTimelineType {
         var charset = CharacterSet.urlPathAllowed
         charset.insert("/")
         return MastodonTimelineType(endpoint: "timelines/tag/\(tag.addingPercentEncoding(withAllowedCharacters: charset)!)")
     }
-    
+
     init(endpoint: String, params: [String: Any] = [:]) {
         self.endpoint = endpoint
         self.params = params
@@ -313,32 +313,32 @@ extension MastodonEndpoint {
             return q
         }
         public let body: Data? = nil
-        
+
         public var limit: Int?
         public var paging: MastodonPagingOption?
-        
+
         public init(limit: Int? = nil, paging: MastodonPagingOption? = nil) {
             self.limit = limit
             self.paging = paging
         }
     }
-    
+
     public struct GetFavourites: MastodonEndpointWithPagingProtocol {
         public typealias Response = MastodonEndpointResponseWithPaging<[MastodonPost]>
-        
+
         public let endpoint = "/api/v1/favourites"
         public let method = "GET"
-        
+
         public var query: [URLQueryItem] {
             var q = [URLQueryItem]()
             paging?.addToQuery(&q)
             return q
         }
         public let body: Data? = nil
-        
+
         public var limit: Int?
         public var paging: MastodonPagingOption?
-        
+
         public init(limit: Int? = nil, paging: MastodonPagingOption? = nil) {
             self.limit = limit
             self.paging = paging

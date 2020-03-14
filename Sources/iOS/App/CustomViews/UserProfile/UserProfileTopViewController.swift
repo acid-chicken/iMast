@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/07/07.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,24 +34,24 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
 
     internal let environment: Environment
     private var input: Input
-    
+
     required init(with input: Input, environment: Environment) {
         self.input = input
         self.environment = environment
         super.init(style: .grouped)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     var loadAfter = false
     var isLoaded = false
     var externalServiceLinks: [(name: String, userId: String?, urls: [(appName: String, url: URL)])] = []
-    
+
     let infoCell = R.nib.userProfileInfoTableViewCell.firstView(owner: self as AnyObject)!
     let bioCell = R.nib.userProfileBioTableViewCell.firstView(owner: self as AnyObject)!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -60,20 +60,20 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
+
         refreshControl = UIRefreshControl()
         refreshControl?.addTarget(self, action: #selector(self.reload(sender:)), for: .valueChanged)
-        
+
         self.title = R.string.userProfile.title()
         self.navigationItem.largeTitleDisplayMode = .always
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "ellipsis.circle.fill"), style: .plain,
             target: self, action: #selector(moreButtonTapped(_:))
         )
-       
+
         self.input(input)
     }
-    
+
     @objc func reload(sender: UIRefreshControl) {
         self.environment.getAccount(id: self.input.id).then { res in
             print(res)
@@ -81,16 +81,16 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
             self.refreshControl?.endRefreshing()
         }
     }
-    
+
     func input(_ input: Input) {
         self.input = input
-        
+
         self.infoCell.userToken = environment
         self.infoCell.load(user: input)
         self.infoCell.separatorInset = .zero
         self.bioCell.userToken = environment
         self.bioCell.load(user: input)
-        
+
         let tootCell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         tootCell.textLabel?.text = R.string.userProfile.cellsTootsTitle()
         tootCell.accessoryType = .disclosureIndicator
@@ -117,7 +117,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
         let createdAtSabunCell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         createdAtSabunCell.textLabel?.text = "登録してから"
         createdAtSabunCell.detailTextLabel?.text = numToCommaString(-Int(createdAt.timeIntervalSinceNow/60/60/24)) + "日"
-        
+
         let tootDaysCell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         tootDaysCell.textLabel?.text = "平均投稿/日"
         tootDaysCell.detailTextLabel?.text = numToCommaString(-(input.postsCount/Int(min(-1, createdAt.timeIntervalSinceNow/60/60/24))))
@@ -130,7 +130,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
                 (appName: "nicocasアプリ(自動再生注意)", url: URL(string: "nicocas://user/\(niconicoId)")!),
             ]))
         }
-        
+
         if let oauthAuths = input.oauthAuthentications {
             for auth in oauthAuths {
                 if auth.provider != "pixiv" { continue }
@@ -259,7 +259,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
                                 self.reload(sender: self.refreshControl!)
                             })
                         })
-                        
+
                     }))
                 }
             } else { // 自分なら
@@ -292,7 +292,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.section == 1 {
             if indexPath.row == 0 {
@@ -310,7 +310,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
                 return
             }
         }
-        
+
         if indexPath.section == 2 {
             let urls = self.externalServiceLinks[indexPath.row].urls.filter { UIApplication.shared.canOpenURL($0.url) }
             func openUrl(url: URL) {
@@ -320,7 +320,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
                     UIApplication.shared.open(url)
                 }
             }
-            
+
             if urls.count == 0 {
                 return
             } else if urls.count == 1 {
@@ -334,7 +334,7 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
                     }))
                 }
                 alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: { _ in
-                    
+
                 }))
                 self.present(alert, animated: true, completion: nil)
             }
@@ -348,14 +348,14 @@ class UserProfileTopViewController: StableTableViewController, Instantiatable, I
         }
         return true
     }
-    
+
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if section == 2 && self.cells[2].count > 0 {
             return "外部サービスのアカウント"
         }
         return nil
     }
-    
+
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         if section == 0, self.input.acct.contains("@") {
             return R.string.userProfile.federatedUserWarning()

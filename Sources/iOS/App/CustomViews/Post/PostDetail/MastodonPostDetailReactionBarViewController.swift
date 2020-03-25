@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,17 +31,17 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
     typealias Environment = MastodonUserToken
     let environment: Environment
     var input: Input
-    
+
     required init(with input: Input, environment: Environment) {
         self.input = input
         self.environment = environment
         super.init(nibName: nil, bundle: Bundle(for: type(of: self)))
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     let replyButton = UIButton() ※ { v in
         v.setTitle("リプライ", for: .normal)
         v.setTitleColor(.gray, for: .normal)
@@ -58,7 +58,7 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
         v.setTitle("⋯", for: .normal)
         v.setTitleColor(.gray, for: .normal)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -96,21 +96,21 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
             make.center.size.equalTo(self.view.readableContentGuide)
             make.height.equalTo(44)
         }
-        
+
         replyButton.addTarget(self, action: #selector(self.openReplyVC), for: .touchUpInside)
         boostButton.addTarget(self, action: #selector(self.boostButtonTapped), for: .touchUpInside)
         favouriteButton.addTarget(self, action: #selector(self.favouriteButtonTapped), for: .touchUpInside)
         othersButton.addTarget(self, action: #selector(self.othersButtonTapped), for: .touchUpInside)
-        
+
         self.input(input)
     }
-    
+
     func input(_ input: Input) {
         self.input = input
         boostButton.setTitleColor(input.reposted ? R.color.barBoost() : .gray, for: .normal)
         favouriteButton.setTitleColor(input.favourited ? R.color.barFavourite() : .gray, for: .normal)
     }
-    
+
     @objc func openReplyVC() {
         let post = self.input.originalPost
         let vc = R.storyboard.newPost.instantiateInitialViewController()!
@@ -119,7 +119,7 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
         vc.title = "返信"
         self.navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     @objc func boostButtonTapped() {
         if input.reposted {
             environment.unrepost(post: input).then { [weak self] res in
@@ -131,7 +131,7 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
             }
         }
     }
-    
+
     @objc func favouriteButtonTapped() {
         if input.favourited {
             environment.unfavourite(post: input).then { [weak self] res in
@@ -143,7 +143,7 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
             }
         }
     }
-    
+
     @objc func othersButtonTapped() {
         let actionSheet = UIAlertController(title: "アクション", message: "", preferredStyle: UIAlertController.Style.actionSheet)
         actionSheet.popoverPresentationController?.sourceView = self.othersButton
@@ -187,20 +187,20 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
         actionSheet.addAction(.init(title: "キャンセル", style: UIAlertAction.Style.cancel))
         self.present(actionSheet, animated: true, completion: nil)
     }
-    
+
     func openBunmyakuVC() {
         let bunmyakuVC = BunmyakuTableViewController.instantiate(.plain, environment: environment)
         bunmyakuVC.basePost = input.originalPost
         navigationController?.pushViewController(bunmyakuVC, animated: true)
     }
-    
+
     func openEmojiListVC() {
         let newVC = EmojiListTableViewController()
         newVC.emojis = (input.emojis ?? []) + (input.profileEmojis ?? [])
         newVC.account = input.account
         navigationController?.pushViewController(newVC, animated: true)
     }
-    
+
     func openAbuseVC() {
         let newVC = MastodonPostAbuseViewController.instantiate(input, environment: environment)
         newVC.placeholder = "『\(input.status.pregReplace(pattern: "<.+?>", with: ""))』を通報します。\n詳細をお書きください（必須ではありません）"

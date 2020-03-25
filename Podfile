@@ -19,13 +19,13 @@ abstract_target 'iMastShared' do
   pod 'KeychainAccess', '~> 4.1.0'
   pod 'SwiftGen', '~> 6.1.0'
   pod "STRegex", "~> 2.1"
-  
+
   abstract_target 'iOS' do
     platform :ios, '13.2'
-    
+
     pod 'Mew', :git => 'https://github.com/rinsuki/Mew.git', :branch => "fix/podspec"
     pod 'R.swift', '~> 5.1.0'
-    
+
     target 'iMast' do
       # Pods for iMast
       pod 'Crossroad', '~> 3.0.1'
@@ -38,7 +38,7 @@ abstract_target 'iMastShared' do
       # If you want to build Catalyst version of iMast, please comment out next one line
       pod '1PasswordExtension', '~> 1.8.5'
       pod 'LicensePlist', '~> 2.9.0'
-      
+
       target 'iMastTests' do
         inherit! :search_paths
         # Pods for testing
@@ -66,7 +66,7 @@ abstract_target 'iMastShared' do
     target 'iMastiOSCore' do
     end
   end
-  
+
   abstract_target 'Mac' do
     platform :osx, '10.15'
     target 'iMast-Mac' do

@@ -8,13 +8,13 @@
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,14 +30,14 @@ class TopAccountMasterViewController: UITableViewController, Instantiatable, Inj
     typealias Environment = MastodonUserToken
     let environment: Environment
     var input: Input
-    
+
     enum Section {
         case profile
         case timelines
         case dependedByMastodonVersion
         case lists
     }
-    
+
     enum Item: Hashable {
         case profile
         case followRequests
@@ -47,23 +47,23 @@ class TopAccountMasterViewController: UITableViewController, Instantiatable, Inj
         case bookmarks
         case list(MastodonList)
     }
-    
+
     required init(with input: Input, environment: Environment) {
         self.input = input
         self.environment = environment
         super.init(style: .grouped)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(
         tableView: self.tableView, cellProvider: self.cellProvider
     )
     var version: Int = 0
     var lists = [MastodonList]()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -76,13 +76,13 @@ class TopAccountMasterViewController: UITableViewController, Instantiatable, Inj
             style: .plain,
             target: self, action: #selector(openNewPost)
         )
-        
+
         update()
         loadLists()
     }
-    
+
     var isFirstUpdate = true
-    
+
     func update() {
         var snapshot = dataSource.plainSnapshot()
         snapshot.appendSections([.profile])
@@ -101,7 +101,7 @@ class TopAccountMasterViewController: UITableViewController, Instantiatable, Inj
         dataSource.apply(snapshot, animatingDifferences: !isFirstUpdate)
         isFirstUpdate = false
     }
-    
+
     func loadLists() {
         environment.getIntVersion().then { [weak self] version in
             guard let strongSelf = self else { return }
@@ -114,16 +114,16 @@ class TopAccountMasterViewController: UITableViewController, Instantiatable, Inj
             strongSelf.update()
         }
     }
-    
+
     func input(_ input: Input) {
     }
-    
+
     @objc func openNewPost() {
         let vc = R.storyboard.newPost.instantiateInitialViewController()!
         vc.userToken = environment
         present(ModalNavigationViewController(rootViewController: vc), animated: true)
     }
-    
+
     func cellProvider(_ tableView: UITableView, indexPath: IndexPath, itemIdentifier: Item) -> UITableViewCell? {
         let cell: UITableViewCell
         switch itemIdentifier {
@@ -161,10 +161,10 @@ class TopAccountMasterViewController: UITableViewController, Instantiatable, Inj
         }
         return cell
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let itemIdentifier = dataSource.itemIdentifier(for: indexPath) else { return }
-        
+
         switch itemIdentifier {
         case .profile:
             environment.verifyCredentials().then { account in

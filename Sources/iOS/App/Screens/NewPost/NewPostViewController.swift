@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/04/28.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ import Alamofire
 import iMastiOSCore
 
 class NewPostViewController: UIViewController, UITextViewDelegate {
-    
+
     @IBOutlet weak var textInput: UITextView! {
         didSet {
             textInput.delegate = self
@@ -40,10 +40,10 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
     @IBOutlet weak var keyboardUpOrDown: UIBarButtonItem!
     @IBOutlet weak var cwInput: UITextField!
     var media: [UploadableMedia] = []
-    
+
     @IBOutlet weak var nowAccountLabel: UILabel!
     @IBOutlet weak var exactOnepixelConstraint: NSLayoutConstraint!
-    
+
     var nowKeyboardUpOrDown: Bool = false
     var isNSFW: Bool = false {
         didSet {
@@ -57,15 +57,15 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         }
     }
     var replyToPost: MastodonPost?
-    
+
     var isPNG = true
     var isModal = false
     @IBOutlet weak var NSFWButton: UIBarButtonItem!
     @IBOutlet weak var scopeSelectButton: UIBarButtonItem!
     var userToken: MastodonUserToken!
-    
+
     var appendBottomString: String = ""
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -106,7 +106,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.configureObserver()
@@ -116,7 +116,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
     }
-    
+
     @IBAction func sendPost(_ sender: Any) {
         print(isNSFW)
         let baseMessage = "しばらくお待ちください\n"
@@ -126,7 +126,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
             preferredStyle: UIAlertController.Style.alert
         )
         present(alert, animated: true, completion: nil)
-        
+
         let uploadPromise = async { _ -> [JSON] in
             var imageJSONs: [JSON] = []
             for (index, medium) in self.media.enumerated() {
@@ -145,7 +145,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
             }
             return imageJSONs
         }
-        
+
         uploadPromise.then { (medias) -> Promise<JSON> in
             DispatchQueue.main.async {
                 alert.message = baseMessage + L10n.NewPost.Alerts.Sending.Steps.send
@@ -206,12 +206,12 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         notification.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
         notification.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-    
+
     func removeObserver() {
         let notification = NotificationCenter.default
         notification.removeObserver(self)
     }
-    
+
     @objc func keyboardWillShow(notification: Notification?) {
         let rect = (notification?.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
         bottomLayout.constant = (rect?.size.height ?? 0) - self.bottomLayoutGuide.length
@@ -267,7 +267,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         nowPlayingText = nowPlayingText.replacingOccurrences(of: "{artist}", with: nowPlayingMusic.artist ?? "")
         nowPlayingText = nowPlayingText.replacingOccurrences(of: "{albumArtist}", with: nowPlayingMusic.albumArtist ?? "")
         nowPlayingText = nowPlayingText.replacingOccurrences(of: "{albumTitle}", with: nowPlayingMusic.albumTitle ?? "")
-        
+
         func finished(_ text: String) {
             self.textInput.insertText(text)
         }
@@ -314,7 +314,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
     }
-    
+
     @IBOutlet weak var imageSelectButton: UIButton!
     @IBAction func imageSelectButtonTapped(_ sender: UIButton) {
         let contentVC = NewPostMediaListViewController(newPostVC: self)
@@ -326,7 +326,7 @@ class NewPostViewController: UIViewController, UITextViewDelegate {
         contentVC.popoverPresentationController?.delegate = self
         self.present(contentVC, animated: true, completion: nil)
     }
-    
+
     func clearContent() {
         cwInput.text = ""
         textInput.text = ""

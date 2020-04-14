@@ -3,17 +3,17 @@
 //  iMast
 //
 //  Created by rinsuki on 2017/05/18.
-//  
+//
 //  ------------------------------------------------------------------------
 //
 //  Copyright 2017-2019 rinsuki and other contributors.
-// 
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
-// 
+//
 //      http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ class ChangeActiveAccountViewController: UITableViewController {
 
     @IBOutlet var accountsTableView: UITableView!
     var userTokens: [MastodonUserToken] = []
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -39,16 +39,16 @@ class ChangeActiveAccountViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
+
         self.title = R.string.localizable.switchActiveAccount()
-        
+
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "ユーザー情報を更新")
         refreshControl.addTarget(self, action: #selector(ChangeActiveAccountViewController.refresh), for: UIControl.Event.valueChanged)
         self.refreshControl = refreshControl
-        
+
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(onTapAddAccountButton))
-        
+
         tableView.rowHeight = 44
         updateTableView()
     }
@@ -57,12 +57,12 @@ class ChangeActiveAccountViewController: UITableViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     func updateTableView() {
         userTokens = MastodonUserToken.getAllUserTokens()
         tableView.reloadData()
     }
-    
+
     @objc func refresh() {
         var successCount = 0
         var failedCount = 0
@@ -94,12 +94,12 @@ class ChangeActiveAccountViewController: UITableViewController {
             self.refreshControl?.attributedTitle = NSAttributedString(string: "ユーザー情報を更新")
         }
     }
-    
+
     @objc func onTapAddAccountButton() {
         let vc = AddAccountIndexViewController()
         self.changeRootVC(UINavigationController(rootViewController: vc), animated: true)
     }
-    
+
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -116,31 +116,31 @@ class ChangeActiveAccountViewController: UITableViewController {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
 
         let userToken = userTokens[indexPath[1]]
-                
-        cell.textLabel!.text = userToken.name   
+
+        cell.textLabel!.text = userToken.name
         cell.detailTextLabel!.text = "@\(userToken.acct) (\(userToken.app.name))"
         if indexPath[1] == 0 {
             cell.accessoryType = UITableViewCell.AccessoryType.checkmark
         }
-        
+
         if let avatarUrl = userToken.avatarUrl {
             cell.imageView?.sd_setImage(with: URL(string: avatarUrl)) { (image, error, cacheType, url) in
                 cell.setNeedsLayout()
             }
             cell.imageView?.ignoreSmartInvert()
         }
-        
+
         // Configure the cell...
 
         return cell
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let token = userTokens[indexPath.row]
         token.use()
         changeRootVC(MainTabBarController.instantiate(environment: token), animated: true)
     }
-    
+
     /*
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -157,7 +157,7 @@ class ChangeActiveAccountViewController: UITableViewController {
         }
     }
     */
-    
+
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let deleteAction = UITableViewRowAction(style: .normal, title: "削除") { (action, index) -> Void in
             tableView.isEditing = false

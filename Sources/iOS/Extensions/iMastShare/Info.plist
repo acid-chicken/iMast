@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>6.1.1</string>
+	<string>9.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>260</string>
+	<string>295</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>
@@ -34,10 +34,10 @@
 				<integer>1</integer>
 			</dict>
 		</dict>
-		<key>NSExtensionMainStoryboard</key>
-		<string>MainInterface</string>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.share-services</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>iMastShare.SharePrincipalViewController</string>
 	</dict>
 </dict>
 </plist>

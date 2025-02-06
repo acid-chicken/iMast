@@ -22,10 +22,7 @@
 //
 
 import Foundation
-import Alamofire
-import SwiftyJSON
 import GRDB
-import Hydra
 
 let fileURL = getFileURL()
 public let dbQueue = try! DatabaseQueue(path: fileURL.path)
@@ -40,6 +37,7 @@ func getFileURL() -> URL {
         print("migrate: App Library -> AppGroup")
         try! FileManager.default.moveItem(atPath: NSHomeDirectory()+"/Library/imast.sqlite", toPath: fileURL.path)
     }
+    print("database: ", fileURL.path)
     return fileURL
 }
 public func initDatabase() {
@@ -62,5 +60,31 @@ public func initDatabase() {
         }
     }
     #endif
+    migrator.registerMigration("user_selected_tabs") { db in
+        try db.create(table: "user_selected_tabs") { table in
+            table.column("user", .text).notNull().references("user", column: "id", onDelete: .cascade, onUpdate: .cascade, deferred: true)
+            table.column("tab_index", .integer).notNull().check { $0 >= 0 && $0 <= 3 }
+            table.column("version", .integer).notNull().defaults(to: 1).check { $0 == 1 }
+            table.column("value", .text).notNull()
+            table.primaryKey(["user", "tab_index"])
+        }
+    }
+    migrator.registerMigration("user_pinned_screens") { db in
+        try db.create(table: "user_pinned_screens") { table in
+            table.column("id", .integer).primaryKey(autoincrement: true).notNull()
+            table.column("position", .double).notNull().unique()
+            table.column("user", .text).notNull().references("user", column: "id", onDelete: .cascade, onUpdate: .cascade, deferred: true)
+            table.column("version", .integer).notNull().defaults(to: 1).check { $0 == 1 }
+            table.column("value", .text).notNull()
+        }
+    }
+    if !Bundle.main.bundlePath.hasSuffix(".appex") {
+        // We shouldn't run this migration in app extension, because only main app's keychain have a access token (this migration rescues it).
+        migrator.registerMigration("access_token_to_keychain_v2") { db in
+            for token in try MastodonUserToken.getAllUserTokens(in: db) {
+                try token.save(in: db)
+            }
+        }
+    }
     try! migrator.migrate(dbQueue)
 }

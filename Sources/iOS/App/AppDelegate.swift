@@ -22,13 +22,36 @@
 //
 
 import UIKit
-import Crossroad
 import UserNotifications
-import SVProgressHUD
-import SafariServices
 import Hydra
 import iMastiOSCore
 import SDWebImage
+
+#if DEBUG
+public extension NSObject {
+    @objc func _imast_scaleFactor() -> Double {
+        return 1.0
+    }
+}
+
+var _scaleFactorSwizzling = false
+func _doScaleFactorSwizzlingIfNot() {
+    guard ProcessInfo.processInfo.isiOSAppOnMac else {
+        return
+    }
+    guard !_scaleFactorSwizzling else {
+        return
+    }
+    _scaleFactorSwizzling = true
+    let uinsSceneViewClass = NSClassFromString("UINSSceneView")
+    let uinsSceneContainerViewClass = NSClassFromString("UINSSceneContainerView")
+    let method = class_getClassMethod(NSObject.self, #selector(NSObject._imast_scaleFactor))!
+    method_setImplementation(class_getInstanceMethod(uinsSceneViewClass, "sceneToSceneViewScaleFactor")!, method_getImplementation(method))
+    method_setImplementation(class_getInstanceMethod(uinsSceneViewClass, "fixedSceneToSceneViewScaleFactor")!, method_getImplementation(method))
+    method_setImplementation(class_getInstanceMethod(uinsSceneContainerViewClass, "sceneToSceneViewScaleForLayout")!, method_getImplementation(method))
+}
+
+#endif
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -39,6 +62,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         // とりあえずもろもろ初期化
+        #if DEBUG
+        _doScaleFactorSwizzlingIfNot()
+        #endif
+        UserDefaults.standard.register(defaults: [
+            // disable floating tab bar due to https://developer.apple.com/forums/thread/763446
+            // TODO: check after next patch release, and think it about adopt to iPadOS 18's new floating tab bar
+            "UseFloatingTabBar": false, // why everyone trying to overriding trait for disable floating tab bar
+        ])
         URLCache.shared = URLCache(memoryCapacity: 0, diskCapacity: 0)
         SDWebImageDownloader.shared.setValue(UserAgentString, forHTTPHeaderField: "User-Agent")
         self.registerDefaultsFromSettingsBundle()
@@ -54,9 +85,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         UNUserNotificationCenter.current().delegate = self
-        
-        SVProgressHUD.setDefaultAnimationType(.native)
-        SVProgressHUD.setDefaultMaskType(.black)
         
         // AppGroup/imageCacheを消す
         do {
@@ -109,6 +137,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        if options.userActivities.contains(where: { $0.activityType == NSUserActivity.activityTypeNewPost }) {
+            return UISceneConfiguration(name: "NewPost", sessionRole: connectingSceneSession.role)
+        }
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
@@ -250,7 +281,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 }
 
 func openVLC(_ url: String) -> Bool {
-    if !UserDefaults.standard.bool(forKey: "webm_vlc_open") {
+    if !Defaults.webmVlcOpen {
         return false
     }
     let vlcOpenUrl = URL(string: "vlc-x-callback://x-callback-url/stream?url=\(url.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!)")!
@@ -266,8 +297,14 @@ extension UIViewController {
         guard let window = self.view.window else {
             fatalError("windowないが")
         }
-        UIView.transition(with: window, duration: 0.5, options: reversed ? .transitionFlipFromLeft : .transitionFlipFromRight, animations: {
-            window.rootViewController = viewController
+        window.changeRootVC(viewController, reversed: reversed)
+    }
+}
+
+extension UIWindow {
+    func changeRootVC(_ viewController: UIViewController, reversed: Bool = false) {
+        UIView.transition(with: self, duration: 0.5, options: reversed ? .transitionFlipFromLeft : .transitionFlipFromRight, animations: {
+            self.rootViewController = viewController
         }, completion: { _ in
             DispatchQueue.main.async {
                 allWebSocketDisconnect()

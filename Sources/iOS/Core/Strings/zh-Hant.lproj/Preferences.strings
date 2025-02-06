@@ -1,0 +1,61 @@
+/* 
+  Preferences.strings
+  iMast
+
+  Created by user on 2020/07/18.
+  Copyright © 2020 rinsuki. All rights reserved.
+*/
+
+"general.streamingAutoConnect.title" = "自動連接串流";
+"general.streamingAutoConnect.no" = "從不";
+"general.streamingAutoConnect.wifi" = "僅連接WiFi時";
+"general.streamingAutoConnect.always" = "總是";
+"general.newAccountVia.title" = "綁定新帳號時嘟文顯示的 via";
+
+"post.title" = "發嘟";
+"post.autoResize.title" = "自動縮放影像大小";
+"post.autoResize.no" = "否";
+"post.autoResize.pixel" = "縮放至%dpx以下";
+"post.useDefaultVisibility" = "套用預設可見範圍";
+
+"nowPlaying.title" = "現正播放";
+"nowPlaying.format.title" = "格式";
+"nowPlaying.addURLIfAppleMusicAndAvailable" = "Apple Music自動添加URL(可用時)";
+
+"timelineAppearance.title" = "時間軸樣式";
+"timelineAppearance.userNameSize" = "使用者名稱文字大小";
+"timelineAppearance.contentSize" = "正文文字大小";
+"timelineAppearance.contentBold" = "正文加粗顯示";
+"timelineAppearance.iconSize" = "圖示大小";
+"timelineAppearance.visibilityAsEmoji" = "以表情文字顯示可見範圍";
+"timelineAppearance.inReplyToAsEmoji" = "在回覆的嘟文上顯示emoji";
+"timelineAppearance.thumbnailHeight" = "縮略圖高度";
+"timelineAppearance.nurunuru" = "滑溜溜模式(重新啟動生效)";
+"timelineAppearance.bigNewPostButton.show" = "顯示發嘟文大按鈕";
+"timelineAppearance.bigNewPostButton.location.title" = "發嘟文大按鈕的位置";
+
+"timeline.title" = "時間軸";
+"timeline.openWebMInVLC" = "以VLC開啟WebM";
+"timeline.useSystemVideoPlayer" = "使用系統影片播放器";
+"timeline.useUniversalLinks" = "Universal Links優先";
+
+"push.link" = "推播通知";
+"push.title" = "推播通知設定";
+"push.accounts.title" = "帳號清單";
+"push.addAccount.title" = "添加帳號";
+"push.addAccount.alertTitle" = "添加帳號";
+"push.addAccount.alertText" = "請輸入實例的主機名稱\n(請勿包含https://或非主機名稱的部分)";
+"push.shared.title" = "通用設定";
+"push.shared.displayErrorIfOccured" = "如果客戶端在接收通知時發生錯誤，將推送錯誤訊息，而不是原始通知內容";
+"push.shared.groupRules.title" = "群組化規則設定 (β)";
+"push.shared.groupRules.byAccount" = "根據帳號分組";
+"push.shared.groupRules.byType.title" = "根據通知類型分組";
+"push.shared.groupRules.byType.description" = "為所有標記ON的類型分組";
+"push.shared.customSounds.title" = "自訂提示音 (α)";
+"push.shared.deleteAccount.title" = "刪除推播通知設定";
+
+"push.support.title" = "支援用";
+"push.support.showUserID.title" = "顯示推播通知使用者ID";
+"push.support.showUserID.alertTitle" = "使用者ID";
+"push.support.showUserID.copyAction" = "複製";
+"push.support.showUserID.failedToCheckUserID" = "忘記使用者ID";

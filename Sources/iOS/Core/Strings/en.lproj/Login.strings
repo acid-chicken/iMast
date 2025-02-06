@@ -1,0 +1,34 @@
+/* 
+  Login.strings
+  iMast
+
+  Created by user on 2020/01/06.
+  Copyright © 2020 rinsuki. All rights reserved.
+*/
+
+"title" = "Login";
+"pleaseInputMastodonInstance" = "Please input mastodon instance";
+"loginButton" = "Login";
+
+"progressDialog.title" = "Logging in...";
+"progressDialog.fetchingServerInfo" = "Fetching server information...";
+"progressDialog.registeringApplication" = "Registering app to server...";
+"progressDialog.pleaseAuthorize" = "Please authorize";
+
+"authorize.title" = "Authorize";
+"authorize.method.safari" = "Login with Safari (Recommended)";
+"authorize.method.safariEphemeral" = "Login with Safari (Private Browse)";
+
+"authorize.tos.header" = "By login, you agree to follow the rules and privacy policies.";
+"authorize.tos.rules" = "Rules of this server";
+"authorize.tos.termsOfService" = "Terms of Service of this server";
+
+"passwordLogin.mailAddress" = "Mail address";
+"passwordLogin.password" = "Password";
+
+"welcome.message" = "Welcome,\n%@";
+"welcome.toTimeline" = "Continue";
+
+"acquireTokenProgress.fetchingToken" = "Acquiring Token...";
+"acquireTokenProgress.fetchingProfile" = "Retrieving your profile...";
+"acquireTokenProgress.almostDone" = "Almost Done…";

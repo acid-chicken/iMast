@@ -23,7 +23,6 @@
 
 import UIKit
 import Ikemen
-import SwiftyJSON
 
 extension UIViewController {
     @MainActor
@@ -53,7 +52,7 @@ extension UIViewController {
     public func confirm(
         title: String = "", message: String = "",
         okButtonMessage: String = "OK", style: UIAlertAction.Style = .default,
-        cancelButtonMessage: String = "キャンセル",
+        cancelButtonMessage: String = CoreL10n.cancel,
         completionHandler: ((Bool) -> Void)? = nil
     ) {
         let alert = UIAlertController(
@@ -74,31 +73,13 @@ extension UIViewController {
     public func confirmAsync(
         title: String = "", message: String = "",
         okButtonMessage: String = "OK", style: UIAlertAction.Style = .default,
-        cancelButtonMessage: String = "キャンセル"
+        cancelButtonMessage: String = CoreL10n.cancel
     ) async -> Bool {
         await withCheckedContinuation { continuation in
             self.confirm(
                 title: title, message: message, okButtonMessage: okButtonMessage, style: style, cancelButtonMessage: cancelButtonMessage
             ) {
                 continuation.resume(returning: $0)
-            }
-        }
-    }
-    
-    @MainActor
-    func errorAlert(errorMsg: String, completionHandler: (() -> Void)? = nil) {
-        alert(
-            title: "内部エラー",
-            message: "あれ？何かがおかしいようです。\nこのメッセージは通常このアプリにバグがあるときに表示されます。\nもしよければ、下のエラーメッセージを開発者にお伝え下さい。\nエラーメッセージ: \(errorMsg)\n同じことをしようとしてもこのエラーが出る場合は、アプリを再起動してみてください。",
-            completionHandler: completionHandler
-        )
-    }
-
-    @MainActor
-    func errorAlertAsync(errorMsg: String) async {
-        await withCheckedContinuation { continuation in
-            errorAlert(errorMsg: errorMsg) {
-                continuation.resume()
             }
         }
     }
@@ -118,18 +99,31 @@ extension UIViewController {
             }
         }
     }
-
-    @MainActor
-    public func apiError(_ json: JSON, completionHandler: (() -> Void)? = nil) {
-        apiError(json["error"].string, json["_response_code"].int, completionHandler: completionHandler)
-    }
     
     @MainActor
-    public func errorReport(error: Error) {
-        let alert = UIAlertController(title: "エラー", message: "エラーが発生しました。\n\n\(error.localizedDescription)", preferredStyle: .alert
+    public func errorReport(error: Error, completionHandler: (() -> Void)? = nil) {
+        if case APIError.errorReturned(errorMessage: let message, errorHttpCode: let code) = error {
+            return alert(title: CoreL10n.Error.Api.title, message: CoreL10n.Error.Api.text(message, code), completionHandler: completionHandler)
+        }
+        if case APIError.unknownResponse(errorHttpCode: let code, errorString: let message) = error {
+            return alert(
+                title: CoreL10n.Error.Http.title,
+                message: CoreL10n.Error.Http.text(code, message ?? CoreL10n.Error.failedToDecodeAsUTF8),
+                completionHandler: completionHandler
+            )
+        }
+        let alert = UIAlertController(
+            title: CoreL10n.ErrorAlert.title,
+            message: CoreL10n.ErrorAlert.message(error.localizedDescription),
+            preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "詳しい情報を見る", style: .default, handler: { _ in
+        alert.addAction(UIAlertAction(
+            title: CoreL10n.ErrorAlert.moreInfo,
+            style: .default
+        ) { _ in
             class ErrorReportViewController: UIViewController {
+                var completionHandler: (() -> Void)? = nil
+                
                 let textView = UITextView() ※ { view in
                     view.font = UIFont.init(name: "Menlo", size: 15)
                     view.adjustsFontForContentSizeCategory = true
@@ -141,16 +135,24 @@ extension UIViewController {
                 }
                 
                 override func viewDidLoad() {
-                    title = "エラー詳細"
+                    title = CoreL10n.ErrorMoreInfo.title
                     navigationItem.leftBarButtonItem = .init(barButtonSystemItem: .cancel, target: self, action: #selector(close))
+                }
+                
+                override func viewDidDisappear(_ animated: Bool) {
+                    super.viewDidDisappear(animated)
+                    completionHandler?()
                 }
             }
             let vc = ErrorReportViewController()
             let navVC = UINavigationController(rootViewController: vc)
             vc.textView.text = "\(error)"
+            vc.completionHandler = completionHandler
             self.present(navVC, animated: true, completion: nil)
+        })
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { _ in
+            completionHandler?()
         }))
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
 }

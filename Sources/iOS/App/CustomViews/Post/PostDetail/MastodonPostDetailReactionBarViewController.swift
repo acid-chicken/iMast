@@ -105,8 +105,8 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
     
     func input(_ input: Input) {
         self.input = input
-        boostButton.setTitleColor(input.reposted ? Asset.barBoost.color : .gray, for: .normal)
-        favouriteButton.setTitleColor(input.favourited ? Asset.barFavourite.color : .gray, for: .normal)
+        boostButton.setTitleColor(input.reposted ? UIColor(resource: .barBoost) : .gray, for: .normal)
+        favouriteButton.setTitleColor(input.favourited ? UIColor(resource: .barFavourite) : .gray, for: .normal)
 
         // build
         var othersMenuChildrens = [UICommand]()
@@ -127,62 +127,119 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
     
     func buildOthersMenu() async throws -> [UIMenuElement] {
         var elements = [UICommand]()
-        let version = try await environment.getIntVersion().wait()
-        if version >= MastodonVersionStringToInt("3.1.0") {
+        let version = try await environment.getIntVersion()
+        if version.supportingFeature(.bookmark) {
             if input.bookmarked {
                 elements.append(.init(title: "ブックマークから削除", image: UIImage(systemName: "bookmark.slash"), action: #selector(removeFromBookmark)))
             } else {
                 elements.append(.init(title: "ブックマーク", image: UIImage(systemName: "bookmark"), action: #selector(addToBookmark)))
             }
         }
-        elements.append(.init(title: "共有", image: UIImage(systemName: "square.and.arrow.up"), action: #selector(openShareSheet)))
-        elements.append(.init(title: "文脈", image: UIImage(systemName: "list.bullet.indent"), action: #selector(openBunmyakuVC)))
+        if version.supportingFeature(.editPost) {
+            if input.account.acct == environment.screenName {
+                elements.append(.init(title: L10n.NewPost.edit, image: UIImage(systemName: "pencil"), action: #selector(openEditPostVC)))
+            }
+        }
+        elements.append(.init(title: L10n.Localizable.PostDetail.share, image: UIImage(systemName: "square.and.arrow.up"), action: #selector(openShareSheet)))
+        elements.append(.init(title: L10n.Localizable.Bunmyaku.title, image: UIImage(systemName: "list.bullet.indent"), action: #selector(openBunmyakuVC)))
         if input.hasCustomEmoji {
-            elements.append(.init(title: "カスタム絵文字一覧", action: #selector(openEmojiListVC)))
+            elements.append(.init(title: L10n.Localizable.CustomEmojis.title, action: #selector(openEmojiListVC)))
         }
         if environment.screenName == input.account.acct {
-            elements.append(.init(title: "削除", image: UIImage(systemName: "trash"), action: #selector(confirmDeletePost), attributes: .destructive))
+            elements.append(.init(title: L10n.Localizable.PostDetail.delete, image: UIImage(systemName: "trash"), action: #selector(confirmDeletePost), attributes: .destructive))
         }
-        elements.append(.init(title: "通報", image: UIImage(systemName: "exclamationmark.bubble"), action: #selector(openAbuseVC)))
+        elements.append(.init(title: L10n.Localizable.PostDetail.reportAbuse, image: UIImage(systemName: "exclamationmark.bubble"), action: #selector(openAbuseVC)))
         return elements
     }
     
     @objc func openReplyVC() {
         let post = self.input.originalPost
-        let vc = StoryboardScene.NewPost.initialScene.instantiate()
-        vc.userToken = environment
-        vc.replyToPost = post
-        vc.title = "返信"
-        self.navigationController?.pushViewController(vc, animated: true)
+        showAsWindow(userActivity: .init(newPostWithMastodonUserToken: environment) ※ {
+            $0.setNewPostReplyInfo(post)
+        }, fallback: .push)
     }
     
     @objc func boostButtonTapped() {
-        let promise = input.reposted
-        ? MastodonEndpoint.DeleteRepost(post: input).request(with: environment)
-        : MastodonEndpoint.CreateRepost(post: input).request(with: environment)
-        promise.then { [weak self] res in
-            self?.input(res)
+        Task {
+            do {
+                let res: MastodonPost
+                if input.reposted {
+                    res = try await MastodonEndpoint.DeleteRepost(post: input).request(with: environment)
+                } else {
+                    res = try await MastodonEndpoint.CreateRepost(post: input).request(with: environment)
+                }
+                await MainActor.run {
+                    self.input(res)
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorReport(error: error)
+                }
+            }
         }
     }
     
     @objc func favouriteButtonTapped() {
-        let promise = input.favourited
-        ? MastodonEndpoint.DeleteFavourite(post: input).request(with: environment)
-        : MastodonEndpoint.CreateFavourite(post: input).request(with: environment)
-        promise.then { [weak self] res in
-            self?.input(res)
+        Task {
+            do {
+                let res: MastodonPost
+                if input.favourited {
+                    res = try await MastodonEndpoint.DeleteFavourite(post: input).request(with: environment)
+                } else {
+                    res = try await MastodonEndpoint.CreateFavourite(post: input).request(with: environment)
+                }
+                await MainActor.run {
+                    self.input(res)
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorReport(error: error)
+                }
+            }
         }
     }
     
     @objc func addToBookmark() {
-        MastodonEndpoint.CreateBookmark(post: input).request(with: environment).then { [weak self] res in
-            self?.input(res)
+        Task {
+            do {
+                let res = try await MastodonEndpoint.CreateBookmark(post: input).request(with: environment)
+                await MainActor.run {
+                    self.input(res)
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorReport(error: error)
+                }
+            }
         }
     }
     
     @objc func removeFromBookmark() {
-        MastodonEndpoint.DeleteBookmark(post: input).request(with: environment).then { [weak self] res in
-            self?.input(res)
+        Task {
+            do {
+                let res = try await MastodonEndpoint.DeleteBookmark(post: input).request(with: environment)
+                await MainActor.run {
+                    self.input(res)
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorReport(error: error)
+                }
+            }
+        }
+    }
+                                
+    @objc func openEditPostVC() {
+        Task {
+            do {
+                let source = try await MastodonEndpoint.GetPostSource(input.id).request(with: environment)
+                let userActivity = NSUserActivity(newPostWithMastodonUserToken: environment)
+                let vc = NewPostViewController(userActivity: userActivity)
+                vc.editPost = (post: input, source: source)
+                present(ModalNavigationViewController(rootViewController: vc), animated: true)
+            } catch {
+                reportError(error: error)
+            }
         }
     }
     
@@ -215,7 +272,6 @@ class MastodonPostDetailReactionBarViewController: UIViewController, Instantiata
     
     @objc func openAbuseVC() {
         let newVC = MastodonPostAbuseViewController.instantiate(input, environment: environment)
-        newVC.placeholder = "『\(input.status.pregReplace(pattern: "<.+?>", with: ""))』を通報します。\n詳細をお書きください（必須ではありません）"
         navigationController?.pushViewController(newVC, animated: true)
     }
     

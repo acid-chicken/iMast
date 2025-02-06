@@ -22,7 +22,6 @@
 //
 
 import UIKit
-import SafariServices
 import SDWebImage
 import iMastiOSCore
 class EmojiListTableViewController: UITableViewController {
@@ -37,7 +36,7 @@ class EmojiListTableViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
-        self.title = "カスタム絵文字一覧"
+        self.title = L10n.Localizable.CustomEmojis.title
     }
 
     // MARK: - Table view data source
@@ -65,7 +64,6 @@ class EmojiListTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let emoji = self.emojis[indexPath.row]
-        let safariVC = SFSafariViewController(url: URL(string: emoji.url)!)
-        self.present(safariVC, animated: true)
+        open(url: URL(string: emoji.url)!)
     }
 }

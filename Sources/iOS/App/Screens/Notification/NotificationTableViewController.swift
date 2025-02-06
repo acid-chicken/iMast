@@ -22,7 +22,6 @@
 //
 
 import UIKit
-import SwiftyJSON
 import Mew
 import iMastiOSCore
 
@@ -87,6 +86,7 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
             self.readmoreView.state = .withError
         }
         TableViewCell<NotificationCellViewController>.register(to: tableView)
+        TableViewCell<MastodonPostCellViewController>.register(to: tableView)
     }
 
     override func didReceiveMemoryWarning() {
@@ -123,6 +123,15 @@ class NotificationTableViewController: UITableViewController, Instantiatable {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let notification = notifications[indexPath.row]
+        if notification.type == "mention", let status = notification.status {
+            return TableViewCell<MastodonPostCellViewController>.dequeued(
+                from: tableView,
+                for: indexPath,
+                input: .init(post: status),
+                parentViewController: self
+            )
+        }
         return TableViewCell<NotificationCellViewController>.dequeued(
             from: tableView,
             for: indexPath,

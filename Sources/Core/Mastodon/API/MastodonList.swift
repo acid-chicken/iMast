@@ -22,9 +22,13 @@
 //
 
 import Foundation
-import Hydra
 
-public struct MastodonList: Codable, MastodonEndpointResponse {
+public struct MastodonList: Codable, MastodonEndpointResponse, Sendable {
+    public init(id: MastodonID, title: String) {
+        self.id = id
+        self.title = title
+    }
+    
     public let id: MastodonID
     public let title: String
 }
@@ -64,6 +68,18 @@ extension MastodonEndpoint {
         public let method = "POST"
         
         public var title: String
+    }
+    
+    public struct GetListFromId: MastodonEndpointProtocol {
+        public init(id: MastodonID) {
+            self.listId = id
+        }
+        
+        public typealias Response = MastodonList
+        public var endpoint: String { "/api/v1/lists/\(listId.string)" }
+        public let method = "GET"
+        
+        public var listId: MastodonID
     }
     
     public struct UpdateList: MastodonEndpointProtocol, Encodable {

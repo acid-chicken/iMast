@@ -22,15 +22,13 @@
 //
 
 import Foundation
-import Hydra
-import SwiftyJSON
 
 struct MastodonPostHashtag: Codable {
     let name: String
     let url: String
 }
 
-public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvailable, MastodonEndpointResponse, MastodonPostContentProtocol {
+public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvailable, MastodonEndpointResponse, MastodonPostContentProtocol, Sendable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.id.string)
         hasher.combine(self.url)
@@ -61,30 +59,11 @@ public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvaila
     public let repostCount: Int
     public let favouritesCount: Int
 
-    public var reposted: Bool {
-        return self._reposted ?? false
-    }
-    let _reposted: Bool?
-
-    public var favourited: Bool {
-        return self._favourited ?? false
-    }
-    let _favourited: Bool?
-    
-    public var bookmarked: Bool {
-        return self._bookmarked ?? false
-    }
-    public var _bookmarked: Bool?
-
-    public var muted: Bool {
-        return self._muted ?? false
-    }
-    let _muted: Bool?
-
-    public var sensitive: Bool {
-        return self._sensitive ?? false
-    }
-    let _sensitive: Bool?
+    @ReadonlyDefault<False> public var reposted: Bool
+    @ReadonlyDefault<False> public var favourited: Bool
+    @ReadonlyDefault<False> public var bookmarked: Bool
+    @ReadonlyDefault<False> public var muted: Bool
+    @ReadonlyDefault<False> public var sensitive: Bool
     public let spoilerText: String
     public let attachments: [MastodonAttachment]
     public let application: MastodonApplication?
@@ -102,7 +81,7 @@ public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvaila
     public var poll: MastodonPoll?
     public let language: String?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case id
         case url
         case account
@@ -114,11 +93,11 @@ public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvaila
         case editedAt = "edited_at"
         case repostCount = "reblogs_count"
         case favouritesCount = "favourites_count"
-        case _reposted = "reblogged"
-        case _favourited = "favourited"
-        case _muted = "muted"
-        case _bookmarked = "bookmarked"
-        case _sensitive = "sensitive"
+        case reposted = "reblogged"
+        case favourited = "favourited"
+        case muted = "muted"
+        case bookmarked = "bookmarked"
+        case sensitive = "sensitive"
         case spoilerText = "spoiler_text"
         case pinned
         case application
@@ -134,7 +113,12 @@ public struct MastodonPost: Codable, EmojifyProtocol, Hashable, MastodonIDAvaila
 
 }
 
-public struct MastodonCustomEmoji: Codable {
+public enum MastodonReactionType {
+    case boost
+    case favorite
+}
+
+public struct MastodonCustomEmoji: Codable, Sendable {
     public let shortcode: String
     public let url: String
     enum CodingKeys: String, CodingKey {
@@ -144,12 +128,12 @@ public struct MastodonCustomEmoji: Codable {
 
 }
 
-public struct MastodonPostContext: Codable, MastodonEndpointResponse {
+public struct MastodonPostContext: Codable, MastodonEndpointResponse, Sendable {
     public let ancestors: [MastodonPost]
     public let descendants: [MastodonPost]
 }
 
-public struct MastodonPostMention: Codable {
+public struct MastodonPostMention: Codable, Sendable {
     public let url: String
     let username: String
     public let acct: String
@@ -157,13 +141,13 @@ public struct MastodonPostMention: Codable {
 
 }
 
-public struct MastodonPoll: Codable, MastodonEndpointResponse {
+public struct MastodonPoll: Codable, MastodonEndpointResponse, Sendable {
     let id: MastodonID
     public let expires_at: Date?
     public let expired: Bool
     public let multiple: Bool
     public let votes_count: Int
-    public let voted: Bool
+    @ReadonlyDefault<False> public var voted: Bool
     public let options: [MastodonPollOption]
 }
 
@@ -390,14 +374,14 @@ extension MastodonEndpoint {
             visibility: MastodonPostVisibility? = nil,
             mediaIds: [MastodonID] = [],
             spoiler: String = "", sensitive: Bool = false,
-            inReplyToPost: MastodonPost? = nil
+            inReplyToPostID: MastodonID? = nil
         ) {
             self.status = status
             self.visibility = visibility
             self.mediaIds = mediaIds
             self.spoiler = spoiler
             self.sensitive = sensitive
-            self.inReplyToPostId = inReplyToPost?.id
+            self.inReplyToPostId = inReplyToPostID
         }
         
         public typealias Response = MastodonPost
@@ -422,6 +406,44 @@ extension MastodonEndpoint {
             case spoiler = "spoiler_text"
             case sensitive
             case inReplyToPostId = "in_reply_to_id"
+        }
+    }
+    
+    public struct EditPost: MastodonEndpointProtocol, Encodable {
+        public init(
+            postID: MastodonID,
+            status: String?,
+            mediaIds: [MastodonID]?,
+            sensitive: Bool?,
+            spoiler: String?
+        ) {
+            self.postID = postID
+            self.status = status
+            self.mediaIds = mediaIds
+            self.sensitive = sensitive
+            self.spoiler = spoiler
+        }
+        
+        public typealias Response = MastodonPost
+        public var endpoint: String {
+            return "/api/v1/statuses/\(postID)"
+        }
+        public let method = "PUT"
+        public func body() throws -> Data? {
+            return try JSONEncoder().encode(self)
+        }
+        
+        public var postID: MastodonID
+        public var status: String?
+        public var mediaIds: [MastodonID]?
+        public var sensitive: Bool?
+        public var spoiler: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case status
+            case mediaIds = "media_ids"
+            case sensitive
+            case spoiler = "spoiler_text"
         }
     }
     
@@ -467,6 +489,31 @@ extension MastodonEndpoint {
         
         public init(post: MastodonPost) {
             self.postId = post.id
+        }
+    }
+    
+    public struct GetPostReactedUsers: MastodonEndpointWithPagingProtocol {
+        public typealias Response = MastodonEndpointResponseWithPaging<[MastodonAccount]>
+        
+        public var endpoint: String { "/api/v1/statuses/\(postId.string)/\(type == .boost ? "reblogged" : "favourited")_by" }
+        public let method = "GET"
+        
+        public var query: [URLQueryItem] {
+            var q = [URLQueryItem]()
+            paging?.addToQuery(&q)
+            return q
+        }
+        
+        public var type: MastodonReactionType
+        public var postId: MastodonID
+        public var limit: Int?
+        public var paging: MastodonPagingOption?
+        
+        public init(post: MastodonPost, type: MastodonReactionType, limit: Int? = nil, paging: MastodonPagingOption? = nil) {
+            self.limit = limit
+            self.paging = paging
+            self.postId = post.id
+            self.type = type
         }
     }
 }

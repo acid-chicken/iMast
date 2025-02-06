@@ -26,13 +26,12 @@ import MobileCoreServices
 import AVFoundation
 import AVKit
 import Photos
-import Hydra
 import Ikemen
 import iMastiOSCore
 
 class NewPostMediaListViewController: UIViewController {
-
-    let newPostVC: NewPostViewController
+    let viewModel: NewPostViewModel
+    var inline: Bool
     
     // TODO: contact じゃないのに使っていいの? アクセシビリティ周りマズそう
     let addButton = UIButton(type: .contactAdd)
@@ -40,8 +39,9 @@ class NewPostMediaListViewController: UIViewController {
         v.distribution = .fillEqually
     }
 
-    init(newPostVC: NewPostViewController) {
-        self.newPostVC = newPostVC
+    init(viewModel: NewPostViewModel, inline: Bool) {
+        self.viewModel = viewModel
+        self.inline = inline
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -53,48 +53,61 @@ class NewPostMediaListViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        let stackView = UIStackView(arrangedSubviews: [
-            addButton,
-            imagesStackView,
-        ])
-        stackView.spacing = 8
-        view.addSubview(stackView)
-        stackView.snp.makeConstraints { make in
-            make.center.equalTo(view.safeAreaLayoutGuide)
-            make.size.equalTo(view.safeAreaLayoutGuide).inset(8)
+        if inline {
+            view.addSubview(imagesStackView)
+            imagesStackView.spacing = 8
+            imagesStackView.snp.makeConstraints { make in
+                make.edges.equalToSuperview().inset(8)
+                make.height.equalTo(72)
+            }
+        } else {
+            let stackView = UIStackView(arrangedSubviews: [
+                addButton,
+                imagesStackView,
+            ])
+            stackView.spacing = 8
+            view.addSubview(stackView)
+            stackView.snp.makeConstraints { make in
+                make.center.equalTo(view.safeAreaLayoutGuide)
+                make.size.equalTo(view.safeAreaLayoutGuide).inset(8)
+            }
+            addButton.snp.makeConstraints { make in
+                make.width.equalToSuperview().multipliedBy(1/5.0).inset(4)
+            }
+            let menu = UIMenu(children: [
+                UIAction(
+                    title: L10n.NewPost.Media.Picker.photoLibrary,
+                    image: UIImage(systemName: "rectangle.on.rectangle"),
+                    handler: { [weak self] _ in
+                        self?.addFromPhotoLibrary()
+                    }
+                ),
+                UIAction(
+                    title: L10n.NewPost.Media.Picker.takePhoto,
+                    image: UIImage(systemName: "camera.fill"),
+                    handler: { [weak self] _ in
+                        #if !os(visionOS)
+                        self?.addFromCamera()
+                        #endif
+                    }
+                ),
+                UIAction(
+                    title: "ブラウズ",
+                    image: UIImage(systemName: "ellipsis"),
+                    handler: { [weak self] _ in
+                        #if !os(visionOS)
+                        guard let strongSelf = self else { return }
+                        let pickerVC = UIDocumentPickerViewController(forOpeningContentTypes: [.image], asCopy: true)
+                        pickerVC.delegate = strongSelf
+                        strongSelf.present(pickerVC, animated: true, completion: nil)
+                        #endif
+                    }
+                ),
+            ])
+            addButton.preferredMenuElementOrder = .fixed
+            addButton.menu = menu
+            addButton.showsMenuAsPrimaryAction = true
         }
-        addButton.snp.makeConstraints { make in
-            make.width.equalToSuperview().multipliedBy(1/5.0).inset(4)
-        }
-        
-        let menu = UIMenu(children: [
-            UIAction(
-                title: L10n.NewPost.Media.Picker.photoLibrary,
-                image: UIImage(systemName: "rectangle.on.rectangle"),
-                handler: { [weak self] _ in
-                    self?.addFromPhotoLibrary()
-                }
-            ),
-            UIAction(
-                title: L10n.NewPost.Media.Picker.takePhoto,
-                image: UIImage(systemName: "camera.fill"),
-                handler: { [weak self] _ in
-                    self?.addFromCamera()
-                }
-            ),
-            UIAction(
-                title: "ブラウズ",
-                image: UIImage(systemName: "ellipsis"),
-                handler: { [weak self] _ in
-                    guard let strongSelf = self else { return }
-                    let pickerVC = UIDocumentPickerViewController(forOpeningContentTypes: [.image], asCopy: true)
-                    pickerVC.delegate = strongSelf
-                    strongSelf.present(pickerVC, animated: true, completion: nil)
-                }
-            ),
-        ])
-        addButton.menu = menu
-        addButton.showsMenuAsPrimaryAction = true
         self.refresh()
     }
 
@@ -104,16 +117,13 @@ class NewPostMediaListViewController: UIViewController {
     }
 
     func refresh() {
-        // update image select button title
-        self.newPostVC.imageSelectButton.setTitle(" "+self.newPostVC.media.count.description, for: .normal)
-        
         // update image list view
         for imageView in self.imagesStackView.arrangedSubviews {
             self.imagesStackView.removeArrangedSubview(imageView)
             imageView.removeFromSuperview()
         }
-        if self.newPostVC.media.count > 0 {
-            for (index, media) in self.newPostVC.media.enumerated() {
+        if viewModel.media.count > 0 {
+            for (index, media) in viewModel.media.enumerated() {
                 let imageView = UIImageView(image: media.thumbnailImage)
                 imageView.ignoreSmartInvert()
                 imageView.contentMode = .scaleAspectFill
@@ -123,6 +133,11 @@ class NewPostMediaListViewController: UIViewController {
                 tapGesture.numberOfTapsRequired = 1
                 imageView.isUserInteractionEnabled = true
                 imageView.addGestureRecognizer(tapGesture)
+                if inline {
+                    imageView.snp.makeConstraints { make in
+                        make.width.equalTo(imageView.snp.height)
+                    }
+                }
                 self.imagesStackView.addArrangedSubview(imageView)
             }
         } else {
@@ -136,23 +151,30 @@ class NewPostMediaListViewController: UIViewController {
     }
     
     func addMedia(media: UploadableMedia) {
-        self.newPostVC.media.append(media)
+        viewModel.media.append(media)
         self.refresh()
     }
     
     func addFromPhotoLibrary() {
         let imgPickerC = UIImagePickerController()
         imgPickerC.sourceType = .photoLibrary
+        #if os(visionOS)
+        // TODO: visionOS でも動画に対応する
+        imgPickerC.mediaTypes = [kUTTypeImage as String]
+        #else
         imgPickerC.mediaTypes = [kUTTypeMovie as String, kUTTypeImage as String]
+        #endif
         imgPickerC.videoExportPreset = AVAssetExportPresetPassthrough
         showImagePickerController(imgPickerC)
     }
     
+    #if !os(visionOS)
     func addFromCamera() {
         let imgPickerC = UIImagePickerController()
         imgPickerC.sourceType = .camera
         showImagePickerController(imgPickerC)
     }
+    #endif
     
     func showImagePickerController(_ imgPickerC: UIImagePickerController) {
         imgPickerC.delegate = self
@@ -161,7 +183,7 @@ class NewPostMediaListViewController: UIViewController {
     
     @objc func tapCurrentMedia(sender: UITapGestureRecognizer) {
         guard let index = sender.view?.tag else { return }
-        let media = newPostVC.media[index]
+        let media = viewModel.media[index]
 
         let alertVC = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: L10n.NewPost.Media.preview, style: .default, handler: { _ in
@@ -188,7 +210,7 @@ class NewPostMediaListViewController: UIViewController {
             }
         }))
         alertVC.addAction(UIAlertAction(title: L10n.NewPost.Media.delete, style: .destructive, handler: { _ in
-            self.newPostVC.media.remove(at: index)
+            self.viewModel.media.remove(at: index)
             self.refresh()
         }))
         alertVC.addAction(UIAlertAction(title: L10n.Localizable.cancel, style: .cancel, handler: nil))
@@ -197,12 +219,15 @@ class NewPostMediaListViewController: UIViewController {
     }
 }
 
+// TODO: 新しい document picker の delegate に対応してこちらも開放する
+#if !os(visionOS)
 extension NewPostMediaListViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         let data = try! Data(contentsOf: url, options: NSData.ReadingOptions.mappedIfSafe)
         self.addMedia(media: UploadableMedia(format: url.pathExtension.lowercased() == "png" ? .png : .jpeg, data: data, url: nil, thumbnailImage: UIImage(data: data)!))
     }
 }
+#endif
 
 extension NewPostMediaListViewController: UIImagePickerControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
@@ -212,6 +237,8 @@ extension NewPostMediaListViewController: UIImagePickerControllerDelegate {
             let data = try! Data(contentsOf: url, options: NSData.ReadingOptions.mappedIfSafe)
             self.addMedia(media: UploadableMedia(format: url.pathExtension.lowercased() == "png" ? .png : .jpeg, data: data, url: nil, thumbnailImage: UIImage(data: data)!))
         } else if let url = info[.mediaURL] as? URL {
+            // TODO: visionOS でも動画投稿に対応する
+            #if !os(visionOS)
             Task {
                 let asset = AVURLAsset(url: url)
                 // サムネイルを作る
@@ -259,11 +286,14 @@ extension NewPostMediaListViewController: UIImagePickerControllerDelegate {
                 }
                 await self.presentAsync(alert, animated: true)
                 let timer = DispatchQueue.mainSafeSync {
-                    Timer.scheduledTimer(withTimeInterval: 0.025, repeats: true, block: { _ in
+                    Timer.scheduledTimer(withTimeInterval: 0.025, repeats: true, block: { @MainActor _ in
                         alert.message = "しばらくお待ちください (\(String(format: "%.1f", arguments: [exportSession.progress * 100.0]))%, est: \(exportSession.estimatedOutputFileLength))"
                     })
                 }
                 await exportSession.export()
+                if let error = exportSession.error {
+                    throw error
+                }
                 timer.invalidate()
 //                    print((try? FileManager.default.attributesOfItem(atPath: outUrl.path)))
                 let data = try! Data(contentsOf: outUrl)
@@ -272,6 +302,7 @@ extension NewPostMediaListViewController: UIImagePickerControllerDelegate {
                     self.addMedia(media: UploadableMedia(format: .mp4, data: data, url: outUrl, thumbnailImage: thumbnailImage))
                 }
             }
+            #endif
             return
         } else if let image = info[.originalImage] as? UIImage {
             // たぶんここに来るやつはカメラなので適当にjpeg圧縮する

@@ -1,0 +1,34 @@
+/* 
+  Login.strings
+  iMast
+
+  Created by user on 2020/01/06.
+  Copyright © 2020 rinsuki. All rights reserved.
+*/
+
+"title" = "登录";
+"pleaseInputMastodonInstance" = "请输入Mastodon服务器链接";
+"loginButton" = "登录";
+
+"progressDialog.title" = "正在登录";
+"progressDialog.fetchingServerInfo" = "正在从服务器取得信息…";
+"progressDialog.registeringApplication" = "正在将app注册在服务器上…";
+"progressDialog.pleaseAuthorize" = "请您认证";
+
+"authorize.title" = "认证";
+"authorize.method.safari" = "使用Safari登录（推荐）";
+"authorize.method.safariEphemeral" = "使用Safari登录（无痕浏览）";
+
+"authorize.tos.header" = "登录后就代表您已同意以下的守则和隐私权政策等";
+"authorize.tos.rules" = "此服务器的守则";
+"authorize.tos.termsOfService" = "此服务器的使用条款";
+
+"passwordLogin.mailAddress" = "邮箱";
+"passwordLogin.password" = "密码";
+
+"welcome.message" = "%@\n欢迎使用";
+"welcome.toTimeline" = "前往时间轴";
+
+"acquireTokenProgress.fetchingToken" = "正在验证…";
+"acquireTokenProgress.fetchingProfile" = "正在读取个人主页信息…";
+"acquireTokenProgress.almostDone" = "稍等一会，马上完成…";

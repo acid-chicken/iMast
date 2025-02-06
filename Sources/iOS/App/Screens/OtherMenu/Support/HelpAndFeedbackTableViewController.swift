@@ -22,7 +22,7 @@
 //  limitations under the License.
 
 import UIKit
-import SafariServices
+import iMastiOSCore
 
 class HelpAndFeedbackTableViewController: UITableViewController {
     
@@ -43,7 +43,20 @@ class HelpAndFeedbackTableViewController: UITableViewController {
         case feedback
     }
     
-    lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(tableView: self.tableView, cellProvider: self.cellProvider)
+    lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(tableView: self.tableView) { [weak self] tableView, indexPath, item in
+        let cell: UITableViewCell
+        switch item {
+        case .web(let title, let url):
+            cell = .init(style: .subtitle, reuseIdentifier: nil)
+            cell.textLabel?.text = title
+            cell.detailTextLabel?.text = url.absoluteString
+        case .feedback:
+            cell = .init(style: .default, reuseIdentifier: nil)
+            cell.textLabel?.text = "GitHub Issues に Feedback を投稿する"
+        }
+        cell.accessoryType = .disclosureIndicator
+        return cell
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,23 +77,6 @@ class HelpAndFeedbackTableViewController: UITableViewController {
         
         title = L10n.Localizable.helpAndFeedback
     }
-
-    // MARK: - Table view data source
-
-    func cellProvider(_ tableView: UITableView, indexPath: IndexPath, item: Item) -> UITableViewCell? {
-        let cell: UITableViewCell
-        switch item {
-        case .web(let title, let url):
-            cell = .init(style: .subtitle, reuseIdentifier: nil)
-            cell.textLabel?.text = title
-            cell.detailTextLabel?.text = url.absoluteString
-        case .feedback:
-            cell = .init(style: .default, reuseIdentifier: nil)
-            cell.textLabel?.text = "Feedback"
-        }
-        cell.accessoryType = .disclosureIndicator
-        return cell
-    }
     
     // MARK: - Table view Delegate
     
@@ -88,11 +84,19 @@ class HelpAndFeedbackTableViewController: UITableViewController {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
         case .web(_, let url):
-            let vc = SFSafariViewController(url: url)
-            self.present(vc, animated: true, completion: nil)
+            open(url: url)
         case .feedback:
-            let vc = FeedbackViewController()
-            self.show(vc, sender: self)
+            let versionString = (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String)+" (\((Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String)))"
+            var body = "\n\n\n\n\n<!-- ここより上に本文を書いてください -->\n\n### Environment\n<table>"
+            body += "<tr><th>iMast<td>\(versionString)"
+            body += "<tr><th>iOS<td>\(UIDevice.current.systemVersion)"
+            body += "<tr><th>Device<td>\(UIDevice.current.platform)"
+            body += "</table>"
+            var urlComponents = URLComponents(string: "https://github.com/cinderella-project/iMast/issues/new")!
+            urlComponents.queryItems = [
+                .init(name: "body", value: body)
+            ]
+            view.window?.windowScene?.open(urlComponents.url!, options: nil)
         }
     }
 }

@@ -22,8 +22,7 @@
 //
 
 import UIKit
-import SwiftyJSON
-import Hydra
+import iMastiOSCore
 
 class LocalTimelineViewController: TimelineViewController {
     override func viewDidLoad() {

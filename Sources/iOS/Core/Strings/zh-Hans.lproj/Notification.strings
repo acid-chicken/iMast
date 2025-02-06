@@ -1,0 +1,18 @@
+/* 
+  Notification.strings
+  iMast
+
+  Created by user on 2020/01/05.
+  Copyright © 2020 rinsuki. All rights reserved.
+*/
+
+"types.follow" = "@%@关注了你";
+"types.favourite" = "@%@喜欢了你的帖子";
+"types.mention" = "@%@提及了你";
+"types.boost" = "@%@转发了帖子";
+"types.poll.owner" = "您发起的投票已结束";
+"types.poll.notowner" = "您参加的投票已结束";
+"types.followRequest" = "@%@向你发出了关注请求";
+"types.postUpdated.isMe" = "帖子已被编辑";
+"types.postUpdated.notMe" = "您曾转发的帖子已被编辑";
+"types.unknown" = "未知通知：%@";

@@ -1,0 +1,34 @@
+/* 
+  Localizable.strings
+  iMast
+
+  Created by user on 2022/11/05.
+  Copyright © 2022 rinsuki. All rights reserved.
+*/
+
+"visibility.title" = "公開範圍";
+"visibility.title.public" = "公開";
+"visibility.title.unlisted" = "已隱藏";
+"visibility.title.private" = "僅限跟隨者";
+"visibility.title.direct" = "僅限指定對象";
+
+"errorAlert.title" = "錯誤";
+"errorAlert.message" = "發生錯誤了。\n\n%@";
+"errorAlert.moreInfo" = "顯示更多資訊";
+
+"errorMoreInfo.title" = "錯誤細節";
+
+"error.failedToDecodeAsUTF8" = "(未知)";
+
+"postFab.locations.leftCenter" = "左方";
+"postFab.locations.rightCenter" = "右方";
+"postFab.locations.leftBottom" = "左下方";
+"postFab.locations.centerBottom" = "正下方";
+"postFab.locations.rightBottom" = "右下方";
+
+"cancel" = "取消";
+
+"error.api.title" = "API錯誤";
+"error.api.text" = "伺服器端回傳了錯誤。\n\n%1$@\n(HTTP %2$d)";
+"error.http.title" = "伺服器錯誤";
+"error.http.text" = "伺服器回傳非預期的回應內容。\n(HTTP %1$d)\n\n%2$@";

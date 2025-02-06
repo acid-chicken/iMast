@@ -25,6 +25,8 @@ import UIKit
 import Mew
 import iMastiOSCore
 
+// DEAR FUTURE READER (mostly me): We are disabling iOS 18's floating tab bar in AppDelegate (due to a iOS bug)
+// you probably want to read it first
 class MainTabBarController: UITabBarController, Instantiatable {
     typealias Input = Void
     typealias Environment = MastodonUserToken
@@ -44,35 +46,33 @@ class MainTabBarController: UITabBarController, Instantiatable {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let homeVC = UINavigationController(rootViewController: HomeTimelineViewController.instantiate(.plain, environment: self.environment))
-        homeVC.tabBarItem.image = UIImage(systemName: "house.fill")
-        homeVC.tabBarItem.title = L10n.Localizable.HomeTimeline.short
-        homeVC.tabBarItem.accessibilityIdentifier = "home"
-
-        let notifyVC = UINavigationController(rootViewController: NotificationTableWrapperViewController.instantiate(environment: self.environment))
-        notifyVC.tabBarItem.image = UIImage(systemName: "bell.fill")
-        notifyVC.tabBarItem.title = L10n.Localizable.notifications
-        notifyVC.tabBarItem.accessibilityIdentifier = "notifications"
-
-        let ltlVC = UINavigationController(rootViewController: LocalTimelineViewController.instantiate(.plain, environment: self.environment))
-        ltlVC.tabBarItem.image = UIImage(systemName: "person.and.person.fill")
-        ltlVC.tabBarItem.title = L10n.Localizable.LocalTimeline.short
-        ltlVC.tabBarItem.accessibilityIdentifier = "ltl"
+        var currentSelectedTabs: [Int: CodableViewDescriptor] = [:]
+        do {
+            currentSelectedTabs = try environment.getSelectedTabs()
+        } catch {
+            self.errorReport(error: error)
+        }
+        lazyLoadVCs = [
+            currentSelectedTabs[0] ?? CodableViewDescriptor.home,
+            currentSelectedTabs[1] ?? CodableViewDescriptor.notifications,
+            currentSelectedTabs[2] ?? CodableViewDescriptor.local,
+        ].enumerated().map { (i, descriptor) -> UIViewController in
+            let vc = UINavigationController(rootViewController: descriptor.createViewController(with: environment, store: i))
+            vc.tabBarItem.image = descriptor.systemImage
+            vc.tabBarItem.title = descriptor.localizedShortTitle
+            vc.tabBarItem.accessibilityIdentifier = "vc[\(i)]"
+            return vc
+        }
 
         let otherVC = UINavigationController(rootViewController: OtherMenuViewController.instantiate(environment: self.environment))
         otherVC.tabBarItem.image = UIImage(systemName: "ellipsis")
         otherVC.tabBarItem.title = L10n.Localizable.other
         otherVC.tabBarItem.accessibilityIdentifier = "others"
-        
-        lazyLoadVCs = [
-            homeVC,
-            notifyVC,
-            ltlVC,
-            otherVC,
-        ]
+        lazyLoadVCs.append(otherVC)
         
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(onLongPressed))
         self.tabBar.addGestureRecognizer(longPressRecognizer)
+        delegate = self
     }
     
     var firstAppear = true
@@ -122,7 +122,7 @@ class MainTabBarController: UITabBarController, Instantiatable {
         _ = try? dbQueue.inDatabase { db in
             try mastodonStateRestoration.save(db)
         }
-        let displayingScreen = mastodonStateRestoration.displayingScreen.split(separator: ".")
+        let displayingScreen = mastodonStateRestoration.displayingScreen
         guard displayingScreen.safe(0) == "main" else { return }
         guard let id = displayingScreen.safe(1).map({ String($0) }) else { return }
         guard let viewControllers = viewControllers else { return }
@@ -134,10 +134,21 @@ class MainTabBarController: UITabBarController, Instantiatable {
     override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
         if let id = item.accessibilityIdentifier,
             var mastodonStateRestoration = view.window?.windowScene?.session.mastodonStateRestoration {
-            mastodonStateRestoration.displayingScreen = ["main", id].joined(separator: ".")
+            mastodonStateRestoration.displayingScreen = ["main", id]
             _ = try? dbQueue.inDatabase { db in
                 try mastodonStateRestoration.save(db)
             }
         }
+    }
+}
+
+extension MainTabBarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        // HACK: We want to disable iOS 18's cross fade while switching tabs, since navigation bar's background is weird while fading.
+        if let fromVC = selectedViewController, fromVC != viewController {
+            UIView.transition(from: fromVC.view, to: viewController.view, duration: 0, options: [], completion: nil)
+        }
+
+        return true
     }
 }

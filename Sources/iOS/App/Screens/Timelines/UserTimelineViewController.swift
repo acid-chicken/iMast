@@ -22,8 +22,6 @@
 //
 
 import UIKit
-import Hydra
-import SwiftyJSON
 import iMastiOSCore
 
 class UserTimelineViewController: TimelineViewController {
@@ -36,14 +34,14 @@ class UserTimelineViewController: TimelineViewController {
     
     override func loadTimeline() async throws {
         self.readmoreView.state = .loading
-        let version = try await environment.getIntVersion().wait()
-        async let pinnedPosts = version >= MastodonVersionStringToInt("1.6.0rc1")
+        let version = try await environment.getIntVersion()
+        async let pinnedPosts = version.supportingFeature(.pinnedPosts)
             ? MastodonEndpoint.GetTimeline(.user(user, pinned: true)).request(with: environment)
             : []
         async let posts = MastodonEndpoint.GetTimeline(.user(user)).request(with: environment)
         var snapshot = self.diffableDataSource.snapshot()
         snapshot.appendItems(try await pinnedPosts.map {
-            environment.memoryStore.post.change(obj: $0)
+            try environment.memoryStore.post.change(obj: $0)
             return .post(id: $0.id, pinned: true)
         }, toSection: .pinned)
         diffableDataSource.apply(snapshot, animatingDifferences: false, completion: nil)

@@ -1,0 +1,39 @@
+/* 
+  NewPost.strings
+  iMast
+
+  Created by user on 2020/01/06.
+  Copyright © 2020 rinsuki. All rights reserved.
+*/
+
+"placeholders.cwWarningText" = "内容警告（可选）";
+"infoText.inReplyTo" = "回复给：%@";
+"send" = "发布";
+"title" = "新帖子";
+"reply" = "回复";
+"edit" = "编辑";
+
+"selectVisibility.title" = "可见范围";
+"selectVisibility.description" = "请选择可见范围";
+
+"addImageFromButton" = "←点击此处添加图片";
+// Safariのファイル選択時の表記に合わせてほしい
+"media.picker.takePhoto" = "拍照";
+// Safariのファイル選択時の表記に合わせてほしい
+"media.picker.photoLibrary" = "照片图库";
+"media.preview" = "预览";
+"media.delete" = "删除";
+
+"keyCommand.open.title" = "发布帖子";
+"keyCommand.open.description" = "打开帖子发布页面";
+"keyCommand.send.title" = "发布";
+"keyCommand.send.description" = "发布帖子";
+
+"alerts.sending.title" = "正在发布";
+"alerts.sending.pleaseWait" = "请稍候…";
+"alerts.sending.steps.mediaUpload" = "正在上传图片 (%1$d/%2$d)";
+"alerts.sending.steps.send" = "正在发送数据";
+"alerts.sending.steps.done" = "完了しました";
+
+// 「メディアとApple Music」 の部分は実際のiOSの設定画面の文言に合わせてください
+"errors.declineAppleMusicPermission" = "无法读取音乐库，请在设置APP中开启iMast的「媒体与Apple Music」权限";

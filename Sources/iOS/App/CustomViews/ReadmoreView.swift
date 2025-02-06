@@ -23,6 +23,7 @@
 
 import UIKit
 import SnapKit
+import iMastiOSCore
 
 class ReadmoreView: UIView {
     enum State {
@@ -51,8 +52,11 @@ class ReadmoreView: UIView {
                 if state != .loading {
                     let isError = state == .withError
                     button.isEnabled = state != .allLoaded
-                    button.setTitle(isError ? "エラー" : "もっと", for: .normal)
+                    button.setTitle(isError ? L10n.Localizable.Error.title : L10n.Localizable.readmore, for: .normal)
                     button.setTitleColor(isError ? .systemRed : tintColor, for: .normal)
+                }
+                if state != .withError {
+                    lastError = nil
                 }
             }
         }
@@ -67,9 +71,9 @@ class ReadmoreView: UIView {
             make.height.greaterThanOrEqualTo(44)
             make.height.equalTo(44).priority(.low)
         }
-        button.setTitle("ここまで", for: .disabled)
+        button.setTitle(L10n.Localizable.nothingMore, for: .disabled)
         button.setTitleColor(.systemGray, for: .disabled)
-        button.setTitle("もっと", for: .normal)
+        button.setTitle(L10n.Localizable.readmore, for: .normal)
         button.setTitleColor(tintColor, for: .normal)
         button.addTarget(self, action: #selector(readMoreTapped), for: .touchUpInside)
         indicator.snp.makeConstraints { make in

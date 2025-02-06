@@ -26,35 +26,26 @@ import Foundation
 import UIKit
 #endif
 
-public enum MastodonPostVisibility: String, CaseIterable, Codable {
+public enum MastodonPostVisibility: String, CaseIterable, Codable, Sendable, Identifiable {
     case `public`
     case unlisted
     case `private`
     case direct
     
+    public var id: String {
+        rawValue
+    }
+    
     public var localizedName: String {
         switch self {
         case .public:
-            return "公開"
+            return CoreL10n.Visibility.Title.public
         case .unlisted:
-            return "未収載"
+            return CoreL10n.Visibility.Title.unlisted
         case .private:
-            return "フォロワー限定"
+            return CoreL10n.Visibility.Title.private
         case .direct:
-            return "ダイレクト"
-        }
-    }
-    
-    public var localizedDescription: String {
-        switch self {
-        case .public:
-            return "LTLやフォロワーのHTL等に流れます"
-        case .unlisted:
-            return "LTLやハッシュタグ検索には出ません"
-        case .private:
-            return "あなたのフォロワーと、メンションを飛ばした対象の人のみ見れます"
-        case .direct:
-            return "メンションを飛ばした対象の人にのみ見れます"
+            return CoreL10n.Visibility.Title.direct
         }
     }
     
@@ -71,10 +62,10 @@ public enum MastodonPostVisibility: String, CaseIterable, Codable {
         }
     }
     
-    public var sfSymbolsName: String? {
+    public var sfSymbolsName: String {
         switch self {
         case .public:
-            return nil
+            return "globe"
         case .unlisted:
             return "lock.open.fill"
         case .private:
@@ -86,11 +77,7 @@ public enum MastodonPostVisibility: String, CaseIterable, Codable {
     
     #if canImport(UIKit)
     public var uiImage: UIImage? {
-        if let name = sfSymbolsName {
-            return UIImage(systemName: name)
-        } else {
-            return UIImage(named: "visibility-" + rawValue)
-        }
+        return UIImage(systemName: sfSymbolsName)
     }
     #endif
 }

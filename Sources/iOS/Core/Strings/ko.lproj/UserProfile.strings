@@ -1,0 +1,49 @@
+/* 
+  UserProfile.strings
+  iMast
+
+  Created by rinsuki on 2018/11/27.
+  
+  ------------------------------------------------------------------------
+
+  Copyright 2017-2019 rinsuki and other contributors.
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
+"title" = "프로필";
+
+"cells.toots.title" = "글";
+"cells.following.title" = "팔로우";
+"cells.followers.title" = "팔로워";
+"cells.createdAt.title" = "가입한 날짜";
+
+"actions.title" = "액션";
+"actions.share" = "공유";
+
+"actions.follow" = "팔로우";
+"actions.followRequestCancel" = "팔로우 요청을 철회";
+"actions.unfollow" = "팔로우 해제";
+
+"actions.mute" = "뮤트";
+"actions.unmute" = "뮤트 해제";
+
+"actions.block" = "차단";
+"actions.unblock" = "차단 해제";
+
+"actions.followRequestsList" = "팔로우 리퀘스트 목록";
+
+"actions.cancel" = "취소";
+
+"federatedUserWarning" = "이 사용자는 외부 인스턴스에 소속되어 있기 때문에, 일부 수치가 정확하지 않을 수 있습니다.";
+"checkLatestProfileInWeb" = "Web에서 최근 프로필 보기";

@@ -22,9 +22,8 @@
 //
 
 import Foundation
-import Hydra
 
-public struct MastodonAccount: Codable, EmojifyProtocol, MastodonEndpointResponse {
+public struct MastodonAccount: Codable, EmojifyProtocol, MastodonEndpointResponse, Sendable {
     public let id: MastodonID
     public let name: String
     public let screenName: String
@@ -96,14 +95,7 @@ public enum MastodonFollowFetchType: String {
     case followers
 }
 
-struct MastodonFollowList {
-    var accounts: [MastodonAccount]
-    var prev: MastodonID?
-    var next: MastodonID?
-    
-}
-
-public struct MastodonAccountField: Codable {
+public struct MastodonAccountField: Codable, Sendable {
     public let name: String
     public let value: String
     public let verifiedAt: Date?

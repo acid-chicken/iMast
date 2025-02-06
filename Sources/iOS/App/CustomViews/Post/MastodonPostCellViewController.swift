@@ -69,7 +69,7 @@ class MastodonPostCellViewController: UIViewController, Instantiatable, Injectab
     }
     let visibilityLabel = UILabel()
     
-    let textView = NotSelectableTextView() ※ { v in
+    let textView = NotSelectableTextView(usingTextLayoutManager: !Defaults.workaroundOfiOS16_TextKit2_WontUpdatesLinkColor) ※ { v in
         v.backgroundColor = nil
         v.isScrollEnabled = false
         v.isEditable = false
@@ -77,7 +77,7 @@ class MastodonPostCellViewController: UIViewController, Instantiatable, Injectab
         v.textContainer.lineFragmentPadding = 0
     }
     let tootInfoView = UIView() ※ { v in
-        v.backgroundColor = Asset.barBoost.color
+        v.backgroundColor = .init(resource: .barBoost)
         v.ignoreSmartInvert()
         v.snp.makeConstraints { make in
             make.width.equalTo(3)
@@ -87,11 +87,11 @@ class MastodonPostCellViewController: UIViewController, Instantiatable, Injectab
     let attachedMediaListViewContrller: AttachedMediaListViewController
     
     let isBoostedView = UIView() ※ { v in
-        v.backgroundColor = Asset.barBoost.color
+        v.backgroundColor = .init(resource: .barBoost)
         v.ignoreSmartInvert()
     }
     let isFavouritedView = UIView() ※ { v in
-        v.backgroundColor = Asset.barFavourite.color
+        v.backgroundColor = .init(resource: .barFavourite)
         v.ignoreSmartInvert()
     }
     
@@ -219,16 +219,9 @@ class MastodonPostCellViewController: UIViewController, Instantiatable, Injectab
         if Defaults.acctAbbr {
             var acctSplitted = acct.split(separator: "@").map { String($0) }
             if acctSplitted.count == 2 {
-                var acctHost = acctSplitted[1]
-                let regex = try! NSRegularExpression(pattern: "[a-zA-Z]{4,}")
-                var replaceTarget: Set<String> = []
-                for r in regex.matches(in: acctHost, options: [], range: NSRange(location: 0, length: acctHost.nsLength)) {
-                    replaceTarget.insert((acctHost as NSString).substring(with: r.range))
-                }
-                for r in replaceTarget {
-                    acctHost = acctHost.replacingOccurrences(of: r, with: "\(r.first!)\(r.nsLength-2)\(r.last!)")
-                }
-                acctSplitted[1] = acctHost
+                acctSplitted[1] = acctSplitted[1].replacing(/[a-zA-Z]{4,}/, with: { match in
+                    return "\(match.output.first!)\(match.output.count-2)\(match.output.last!)"
+                })
             }
             acct = acctSplitted.joined(separator: "@")
         }
@@ -299,9 +292,7 @@ class MastodonPostCellViewController: UIViewController, Instantiatable, Injectab
             ]).emojify(asyncLoadProgressHandler: {
                 self.textView.setNeedsDisplay()
             }, emojifyProtocol: post)
-        } else if let attrStr = html.parseText2HTML(attributes: attrs, asyncLoadProgressHandler: {
-            self.textView.setNeedsDisplay()
-        })?.emojify(asyncLoadProgressHandler: {
+        } else if let attrStr = html.parseText2HTML(attributes: attrs)?.emojify(asyncLoadProgressHandler: {
             self.textView.setNeedsDisplay()
         }, emojifyProtocol: post) {
             textView.attributedText = attrStr
@@ -319,33 +310,42 @@ class MastodonPostCellViewController: UIViewController, Instantiatable, Injectab
     
     @objc func iconTapped() {
         let vc = UserProfileTopViewController.instantiate(input.post.originalPost.account, environment: self.environment)
-        self.navigationController?.pushViewController(vc, animated: true)
+        showFromTimeline(vc)
     }
 }
 
 extension MastodonPostCellViewController: UITextViewDelegate {
-    func textView(_ textView: UITextView, shouldInteractWith url: URL, in characterRange: NSRange) -> Bool {
-        var urlString = url.absoluteString
-        let visibleString = (textView.attributedText.string as NSString).substring(with: characterRange)
-        if let mention = input.post.mentions.first(where: { $0.url == urlString }) {
-            MastodonEndpoint.GetAccount(target: mention.id)
-                .request(with: environment)
-                .then { user in
-                    let newVC = UserProfileTopViewController.instantiate(user, environment: self.environment)
-                    self.navigationController?.pushViewController(newVC, animated: true)
-                }
+    func textView(_ textView: UITextView, shouldInteractWith url: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        switch interaction {
+        case .invokeDefaultAction:
+            var urlString = url.absoluteString
+            let visibleString = (textView.attributedText.string as NSString).substring(with: characterRange)
+            if let mention = input.post.mentions.first(where: { $0.url == urlString }) {
+                MastodonEndpoint.GetAccount(target: mention.id)
+                    .request(with: environment)
+                    .then { user in
+                        let newVC = UserProfileTopViewController.instantiate(user, environment: self.environment)
+                        self.navigationController?.pushViewController(newVC, animated: true)
+                    }
+                return false
+            }
+            if let media = input.post.attachments.first(where: { $0.textUrl == urlString }) {
+                urlString = media.url
+            }
+            if visibleString.starts(with: "#") {
+                let tag = String(visibleString[visibleString.index(after: visibleString.startIndex)...])
+                let newVC = HashtagTimelineViewController.init(hashtag: tag, environment: environment)
+                self.navigationController?.pushViewController(newVC, animated: true)
+                return false
+            }
+            self.open(url: URL(string: urlString)!)
             return false
+        case .presentActions:
+            return true // TODO: メニュー項目に追加できないか検討
+        case .preview:
+            return false // TODO: 独自プレビュー実装できないか検討
+        @unknown default:
+            return true
         }
-        if let media = input.post.attachments.first(where: { $0.textUrl == urlString }) {
-            urlString = media.url
-        }
-        if visibleString.starts(with: "#") {
-            let tag = String(visibleString[visibleString.index(after: visibleString.startIndex)...])
-            let newVC = HashtagTimelineViewController.init(hashtag: tag, environment: environment)
-            self.navigationController?.pushViewController(newVC, animated: true)
-            return false
-        }
-        self.open(url: URL(string: urlString)!)
-        return false
     }
 }

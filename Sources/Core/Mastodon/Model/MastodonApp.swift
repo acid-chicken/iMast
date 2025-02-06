@@ -22,12 +22,19 @@
 //  limitations under the License.
 
 import Foundation
-import SwiftyJSON
-import Hydra
-import Alamofire
 import GRDB
 
-public class MastodonApp {
+public class MastodonApp: Hashable {
+    public static func == (lhs: MastodonApp, rhs: MastodonApp) -> Bool {
+        return lhs.instance.hostName == rhs.instance.hostName && lhs.clientId == rhs.clientId && lhs.id == rhs.id
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(instance.hostName)
+        hasher.combine(clientId)
+    }
+    
     var clientId: String
     var clientSecret: String
     public var name: String
@@ -35,10 +42,10 @@ public class MastodonApp {
     public var instance: MastodonInstance
     var id: String
     
-    init(instance: MastodonInstance, info: JSON, name: String, redirectUri: String) {
+    init(instance: MastodonInstance, info: MastodonEndpoint.CreateApp.Response, name: String, redirectUri: String) {
         self.instance = instance
-        clientId = info["client_id"].stringValue
-        clientSecret = info["client_secret"].stringValue
+        clientId = info.clientId
+        clientSecret = info.clientSecret
         self.name = name
         self.redirectUri = redirectUri
         self.id = genRandomString()
@@ -69,6 +76,18 @@ public class MastodonApp {
         app.id = row["id"]
         return app
     }
+    
+    #if DEBUG
+    static public func debugGetOne() throws -> MastodonApp? {
+        let row = try dbQueue.read { db in
+            return try Row.fetchOne(db, sql: "SELECT * FROM app ORDER BY rowid DESC LIMIT 1")
+        }
+        guard let row else {
+            return nil
+        }
+        return self.initFromRow(row: row)
+    }
+    #endif
     
     public func save() throws {
         try dbQueue.inDatabase { db in
@@ -104,15 +123,43 @@ public class MastodonApp {
             var access_token: String
         }
         
-        let res: Response = try await Alamofire.request("https://\(self.instance.hostName)/oauth/token", method: .post, parameters: [
-            "grant_type": "authorization_code",
-            "redirect_uri": self.redirectUri,
-            "client_id": self.clientId,
-            "client_secret": self.clientSecret,
-            "code": code,
-            "state": self.id,
-        ]).responseDecodable()
+        let response = try await MastodonEndpoint.AuthorizeWithCodeRequest(
+            redirectUri: redirectUri,
+            clientId: clientId, clientSecret: clientSecret,
+            code: code, state: id
+        ).request(to: instance)
         
-        return MastodonUserToken(app: self, token: res.access_token)
+        return MastodonUserToken(app: self, token: response.accessToken)
+    }
+}
+
+extension MastodonEndpoint {
+    public struct AuthorizeWithCodeRequest: MastodonAnonymousEndpointProtocol, Encodable {
+        public struct Response: MastodonEndpointResponse, Decodable {
+            let accessToken: String
+            
+            enum CodingKeys: String, CodingKey {
+                case accessToken = "access_token"
+            }
+        }
+        
+        public var endpoint: String { "/oauth/token" }
+        public var method: String { "POST" }
+        
+        public let grantType = "authorization_code"
+        public var redirectUri: String
+        public var clientId: String
+        public var clientSecret: String
+        public var code: String
+        public var state: String
+        
+        enum CodingKeys: String, CodingKey {
+            case grantType = "grant_type"
+            case redirectUri = "redirect_uri"
+            case clientId = "client_id"
+            case clientSecret = "client_secret"
+            case code
+            case state
+        }
     }
 }
